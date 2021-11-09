@@ -6,15 +6,12 @@ import (
 	"errors"
 	"io"
 	"os/exec"
-	"strings"
 
 	"github.com/ArisAachen/experience/define"
 )
 
 // comm Module
-// use dmidecode command to get system info message
-// man doc: https://linux.die.net/man/8/dmidecode
-// file dir: /sys/class/dmi/id
+// use command to get system info
 
 // GetCpuInfo use dmidecode get cpu info
 func GetCpuInfo() (define.BaseInfo, error) {
@@ -26,25 +23,29 @@ func GetBaseBoardInfo() (define.BaseInfo, error) {
 	return general(define.BoardModule)
 }
 
+// GetMemoryInfo use dmidecode to get memory
+func GetMemoryInfo() (define.BaseInfo, error) {
+	return general(define.MemoryModule)
+}
+
+// GetDiskInfo use lsblk to get disk info
+func GetDiskInfo() (define.BaseInfo, error) {
+	return general(define.DiskModule)
+}
+
+// general the general func to get system info
 func general(file define.SysModule) (define.BaseInfo, error) {
 	// init cpu info
 	var info define.BaseInfo
-	var parser baseCommand
 
 	// check if file is valid, and construct base parser
-	switch file {
-	case define.CpuModule:
-		parser = &cpuCommand{}
-	case define.BoardModule:
-		parser = &boardCommand{}
-	default:
-		return info, errors.New("file is not valid")
+	parser := parserFactory.createParser(parserFactory{}, file)
+	if parser == nil {
+		return info, errors.New("file module is not exist")
 	}
 
 	// use dmi command read cpu info
-	// var byErr bytes.
-	args := []string{"dmidecode", "-t", file.Module()}
-	cmd := exec.Command("/bin/bash", "-c", strings.Join(args, " "))
+	cmd := exec.Command("/bin/bash", "-c", parser.param())
 	// run command
 	buffer, err := cmd.CombinedOutput()
 	if err != nil {

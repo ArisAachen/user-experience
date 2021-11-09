@@ -7,20 +7,23 @@ const (
 	DbusInterface = ServiceName
 )
 
+const (
+	// Processor indicate using processor as param to read cpu info
+	processor = "processor"
+	baseboard = "baseboard"
+	memory    = "memory"
+	disk      = "disk"
+)
+
 // SysModule indicate system info file
 type SysModule string
 
 const (
 	// CpuModule save all cpu info file
-	CpuModule   SysModule = "CpuModule"
-	BoardModule SysModule = "BoardModule"
-)
-
-const (
-	// Processor indicate using processor as param to read cpu info
-	processor = "processor"
-	baseboard = "baseboard"
-
+	CpuModule    SysModule = "CpuModule"
+	BoardModule  SysModule = "BoardModule"
+	MemoryModule SysModule = "MemoryModule"
+	DiskModule   SysModule = "DiskModule"
 )
 
 // String check if now file path is valid and convert to string
@@ -41,6 +44,10 @@ func (info SysModule) Module() string {
 		return processor
 	case BoardModule:
 		return baseboard
+	case MemoryModule:
+		return memory
+	case DiskModule:
+		return disk
 	}
 	return ""
 }
@@ -56,16 +63,36 @@ const (
 	ProcessorId      SysInfoKey = "ID"
 
 	// BoardProductName  and BoardSerialNumber is read key of base board
-	BoardProductName  SysModule = "ProductName"
-	BoardSerialNumber SysModule = "SerialNumber"
+	BoardProductName  SysInfoKey = "ProductName"
+	BoardSerialNumber SysInfoKey = "SerialNumber"
+
+	// MemoryMaximumCapacity is read key of memory
+	MemoryMaximumCapacity SysInfoKey = "MaximumCapacity"
 )
 
 // String check if system key is valid and convert to string
 func (key SysInfoKey) String() string {
 	switch key {
-	case ProcessorVersion, ProcessorId:
+	case ProcessorVersion, ProcessorId, BoardProductName,
+		BoardSerialNumber, MemoryMaximumCapacity:
 		return string(key)
+	default:
+	}
+	return ""
+}
 
+// Tool indicate exec tool to get system info
+type Tool string
+
+const (
+	DmiDecode Tool = "dmidecode"
+	LsBlk     Tool = "lsblk"
+)
+
+func (t Tool) String() string {
+	switch t {
+	case DmiDecode, LsBlk:
+		return string(t)
 	default:
 	}
 	return ""
