@@ -24,7 +24,7 @@ func NewSysCfg() *SysCfg {
 }
 
 // SaveToFile save protobuf config to file
-func (cfg *SysCfg)SaveToFile(filename string)(int64,error) {
+func (cfg *SysCfg)SaveToFile(filename string) error {
 	// lock op
 	cfg.lock.Lock()
 	defer cfg.lock.Unlock()
@@ -32,21 +32,21 @@ func (cfg *SysCfg)SaveToFile(filename string)(int64,error) {
 	// check and create file
 	fObj , err := os.Create(filename)
 	if err != nil {
-		return 0, err
+		return err
 	}
 
 	// marshal config to buf
 	buf, err := proto.Marshal(&cfg.HardWareInfo)
 	if err != nil {
-		return 0, err
+		return err
 	}
 	// bytes writer
 	byBuf := bytes.NewBuffer(buf)
-	num, err := byBuf.WriteTo(fObj)
+	_, err = byBuf.WriteTo(fObj)
 	if err != nil {
-		return 0, err
+		return err
 	}
-	return num, nil
+	return nil
 }
 
 // LoadFromFile load protobuf config from file

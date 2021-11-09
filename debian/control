@@ -1,0 +1,6 @@
+Source:
+
+
+Build-Depends:
+    protoc-gen-go
+    protobuf-compiler
