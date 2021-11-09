@@ -10,27 +10,23 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
+// SysCfg System config use to store system info
+// check if hardware is diff with last store,
+// if is, need re-check uni id from web
 type SysCfg struct {
 	// file lock
 	lock sync.Mutex
 	define.HardWareInfo
 }
 
-// NewSysCfg create new config obj
-func NewSysCfg() *SysCfg {
-	cfg := &SysCfg{
-	}
-	return cfg
-}
-
 // SaveToFile save protobuf config to file
-func (cfg *SysCfg)SaveToFile(filename string) error {
+func (cfg *SysCfg) SaveToFile(filename string) error {
 	// lock op
 	cfg.lock.Lock()
 	defer cfg.lock.Unlock()
 
 	// check and create file
-	fObj , err := os.Create(filename)
+	fObj, err := os.Create(filename)
 	if err != nil {
 		return err
 	}
@@ -60,7 +56,7 @@ func (cfg *SysCfg) LoadFromFile(filename string) error {
 	if err != nil {
 		return err
 	}
-	err = proto.Unmarshal(buf,&cfg.HardWareInfo)
+	err = proto.Unmarshal(buf, &cfg.HardWareInfo)
 	if err != nil {
 		return err
 	}

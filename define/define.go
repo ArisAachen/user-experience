@@ -8,6 +8,11 @@ const (
 )
 
 const (
+	BaseCfgFile = "/var/lib/deepin-user-experience"
+	HwCfgFile   = BaseCfgFile + "hardware"
+)
+
+const (
 	// Processor indicate using processor as param to read cpu info
 	processor = "processor"
 	baseboard = "baseboard"

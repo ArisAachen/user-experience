@@ -6,3 +6,6 @@ package launch
 	It is the main part of this project.
 */
 
+func main() {
+
+}
