@@ -7,23 +7,46 @@ var once sync.Once
 
 // CfgMgr Config Manager to manager all config
 type CfgMgr struct {
-	sysCfg *SysCfg
+	cfg map[string]BaseCfg
 }
 
 // GetInstance create global config once
 func GetInstance() *CfgMgr {
+	// init global config once
 	once.Do(func() {
 		globalCfgMgr = &CfgMgr{
-			sysCfg: new(SysCfg),
+			// create config mapS
+			cfg: make(map[string]BaseCfg),
 		}
 	})
 	return globalCfgMgr
 }
 
-func (mgr *CfgMgr) SysCfg() *SysCfg {
-	// make sure sysconfig exist
-	if mgr.sysCfg == nil {
-		mgr.sysCfg = &SysCfg{}
+// Init read all config file from config
+func (mgr *CfgMgr) Init() {
+	// check if map is nil
+	if mgr.cfg == nil {
+		return
 	}
-	return mgr.sysCfg
+	// add post config module
+	psc := new(PostCfg)
+	_ = psc.LoadFromFile("post")
+	mgr.cfg[psc.name()] = psc
+
+	// add hardware config module
+	hdc := new(HardwareCfg)
+	_ = hdc.LoadFromFile("hardware")
+	mgr.cfg[hdc.name()] = hdc
+
+	// add system config module
+	syc := new(SysCfg)
+	_ = syc.LoadFromFile("system")
+	mgr.cfg[syc.name()] = syc
+}
+
+// GetRandomDomain get random url to post each time
+func (mgr *CfgMgr) GetRandomDomain() string {
+
+
+	return ""
 }

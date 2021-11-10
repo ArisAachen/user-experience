@@ -11,13 +11,13 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-// HardwareCfg System config use to store system info
+// HardwareCfg System config use to store hardware info
 // check if hardware is diff with last store,
 // if is, need re-check uni id from web
 type HardwareCfg struct {
 	// file lock
 	lock sync.Mutex
-	define.HardWareInfo
+	define.HardwareInfo
 }
 
 // SaveToFile save protobuf config to file
@@ -33,7 +33,7 @@ func (hc *HardwareCfg) SaveToFile(filename string) error {
 	}
 
 	// marshal config to buf
-	buf, err := proto.Marshal(&hc.HardWareInfo)
+	buf, err := proto.Marshal(&hc.HardwareInfo)
 	if err != nil {
 		return err
 	}
@@ -57,7 +57,7 @@ func (hc *HardwareCfg) LoadFromFile(filename string) error {
 	if err != nil {
 		return err
 	}
-	err = proto.Unmarshal(buf, &hc.HardWareInfo)
+	err = proto.Unmarshal(buf, &hc.HardwareInfo)
 	if err != nil {
 		return err
 	}
@@ -78,4 +78,9 @@ func (hc *HardwareCfg) name() string {
 
 func (hc *HardwareCfg) Handler(base queue.BaseQueue, msg string) {
 	base.Push(nil, msg)
+}
+
+func (hc *HardwareCfg) GetInterface() string {
+
+	return ""
 }
