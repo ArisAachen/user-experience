@@ -11,17 +11,17 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-// PostCfg System config use to store system state info,
+// postCfg System config use to store system state info,
 // check if config has been changed,
 // if is, need re-check send message to writer
-type PostCfg struct {
+type postCfg struct {
 	// file lock
 	lock sync.Mutex
 	define.SysCfg
 }
 
 // SaveToFile save protobuf config to file
-func (st *PostCfg) SaveToFile(filename string) error {
+func (st *postCfg) SaveToFile(filename string) error {
 	// lock op
 	st.lock.Lock()
 	defer st.lock.Unlock()
@@ -47,7 +47,7 @@ func (st *PostCfg) SaveToFile(filename string) error {
 }
 
 // LoadFromFile load protobuf config from file
-func (st *PostCfg) LoadFromFile(filename string) error {
+func (st *postCfg) LoadFromFile(filename string) error {
 	// lock op
 	st.lock.Lock()
 	defer st.lock.Unlock()
@@ -65,22 +65,26 @@ func (st *PostCfg) LoadFromFile(filename string) error {
 }
 
 // check if hardware is changed, if is, should update
-func (st *PostCfg) needUpdate() bool {
+func (st *postCfg) needUpdate() bool {
 	var update bool
 
 	return update
 }
 
 // name indicate hardware module nameS
-func (st *PostCfg) name() string {
+func (st *postCfg) name() string {
 	return "SystemConfig"
 }
 
-func (st *PostCfg) Handler(base queue.BaseQueue, msg string) {
-	base.Push(nil, msg)
+func (st *postCfg) Handler(base queue.BaseQueue, msg string) {
+	// base.Push(nil, msg)
 }
 
-func (st *PostCfg) GetInterface() string {
+func (st *postCfg) GetInterface() string {
 
 	return ""
+}
+
+func (st *postCfg) push(queue queue.BaseQueue) {
+
 }

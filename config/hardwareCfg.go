@@ -11,17 +11,17 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-// HardwareCfg System config use to store hardware info
+// hardwareCfg System config use to store hardware info
 // check if hardware is diff with last store,
 // if is, need re-check uni id from web
-type HardwareCfg struct {
+type hardwareCfg struct {
 	// file lock
 	lock sync.Mutex
 	define.HardwareInfo
 }
 
 // SaveToFile save protobuf config to file
-func (hc *HardwareCfg) SaveToFile(filename string) error {
+func (hc *hardwareCfg) SaveToFile(filename string) error {
 	// lock op
 	hc.lock.Lock()
 	defer hc.lock.Unlock()
@@ -47,7 +47,7 @@ func (hc *HardwareCfg) SaveToFile(filename string) error {
 }
 
 // LoadFromFile load protobuf config from file
-func (hc *HardwareCfg) LoadFromFile(filename string) error {
+func (hc *hardwareCfg) LoadFromFile(filename string) error {
 	// lock op
 	hc.lock.Lock()
 	defer hc.lock.Unlock()
@@ -65,22 +65,29 @@ func (hc *HardwareCfg) LoadFromFile(filename string) error {
 }
 
 // check if hardware is changed, if is, should update
-func (hc *HardwareCfg) needUpdate() bool {
+func (hc *hardwareCfg) needUpdate() bool {
 	var update bool
 
 	return update
 }
 
 // name indicate hardware module nameS
-func (hc *HardwareCfg) name() string {
+func (hc *hardwareCfg) name() string {
 	return "HardwareConfig"
 }
 
-func (hc *HardwareCfg) Handler(base queue.BaseQueue, msg string) {
-	base.Push(nil, msg)
+// Handler use to handle write result
+func (hc *hardwareCfg) Handler(base queue.BaseQueue, result define.WriteResult) {
+	// for hardware config, write data to web sender failed,
+	// should write data to database
+	base.Push("", nil, "")
 }
 
-func (hc *HardwareCfg) GetInterface() string {
+func (hc *hardwareCfg) GetInterface() string {
 
 	return ""
+}
+
+func (hc *hardwareCfg) push(queue queue.BaseQueue) {
+
 }

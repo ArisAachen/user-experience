@@ -3,28 +3,33 @@ package queue
 import (
 	"sync"
 
+	"github.com/ArisAachen/experience/define"
+	"github.com/ArisAachen/experience/launch"
 	"github.com/ArisAachen/experience/writer"
 )
 
-// WebQueue collect messages from
-type WebQueue struct {
+// WebQueueItem collect messages from
+type WebQueueItem struct {
 	// queue store callback and message
 	queue queue
 	// cond is signal if current queue is empty
 	cond sync.Cond
+
+	// save launcher
+	launcher *launch.Launch
 }
 
 // create web queue
-func newWebQueue() *WebQueue {
+func newWebQueue() *WebQueueItem {
 	// create web queue
-	wq := &WebQueue{
+	wq := &WebQueueItem{
 		queue: queue{},
 	}
 	return wq
 }
 
 // Push data to queue
-func (web *WebQueue) Push(handler BaseQueueHandler, msg string) {
+func (web *WebQueueItem) Push(handler BaseQueueHandler, msg string) {
 	// push data to queue
 	web.queue.push(handler, msg)
 
@@ -33,7 +38,7 @@ func (web *WebQueue) Push(handler BaseQueueHandler, msg string) {
 }
 
 // Pop pop data to writer
-func (web *WebQueue) Pop(writer writer.BaseWriter) {
+func (web *WebQueueItem) Pop(writer writer.BaseWriter) {
 	// check if writer is valid
 	if writer == nil {
 		logger.Warning("writer failed, writer is nil")
@@ -52,6 +57,7 @@ func (web *WebQueue) Pop(writer writer.BaseWriter) {
 			continue
 		}
 		// write msg to writer
-		writer.Write(nil, elem.msg)
+		// TODO handler is not nil
+		writer.Write(define.WebItemWriter, nil, elem.msg)
 	}
 }

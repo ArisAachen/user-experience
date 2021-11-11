@@ -11,17 +11,17 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-// SysCfg System config use to store system state info,
+// sysCfg System config use to store system state info,
 // check if config has been changed,
 // if is, need re-check send message to writer
-type SysCfg struct {
+type sysCfg struct {
 	// file lock
 	lock sync.Mutex
 	define.SysCfg
 }
 
 // SaveToFile save protobuf config to file
-func (sys *SysCfg) SaveToFile(filename string) error {
+func (sys *sysCfg) SaveToFile(filename string) error {
 	// lock op
 	sys.lock.Lock()
 	defer sys.lock.Unlock()
@@ -47,7 +47,7 @@ func (sys *SysCfg) SaveToFile(filename string) error {
 }
 
 // LoadFromFile load protobuf config from file
-func (sys *SysCfg) LoadFromFile(filename string) error {
+func (sys *sysCfg) LoadFromFile(filename string) error {
 	// lock op
 	sys.lock.Lock()
 	defer sys.lock.Unlock()
@@ -65,22 +65,26 @@ func (sys *SysCfg) LoadFromFile(filename string) error {
 }
 
 // check if hardware is changed, if is, should update
-func (sys *SysCfg) needUpdate() bool {
+func (sys *sysCfg) needUpdate() bool {
 	var update bool
 
 	return update
 }
 
 // name indicate hardware module nameS
-func (sys *SysCfg) name() string {
+func (sys *sysCfg) name() string {
 	return "SystemConfig"
 }
 
-func (sys *SysCfg) Handler(base queue.BaseQueue, msg string) {
-	base.Push(nil, msg)
+func (sys *sysCfg) Handler(base queue.BaseQueue, msg string) {
+	// base.Push(nil, msg)
 }
 
-func (sys *SysCfg) GetInterface() string {
+func (sys *sysCfg) GetInterface() string {
 
 	return ""
+}
+
+func (sys *sysCfg) push(queue queue.BaseQueue) {
+
 }

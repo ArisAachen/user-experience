@@ -1,6 +1,8 @@
 package writer
 
-import "pkg.deepin.io/lib/log"
+import (
+	"pkg.deepin.io/lib/log"
+)
 
 var logger *log.Logger
 

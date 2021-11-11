@@ -1,8 +1,10 @@
 package launch
 
 import (
+	"github.com/ArisAachen/experience/collect"
 	"github.com/ArisAachen/experience/config"
-	"pkg.deepin.io/lib/log"
+	"github.com/ArisAachen/experience/queue"
+	"github.com/ArisAachen/experience/writer"
 )
 
 /*
@@ -13,10 +15,16 @@ import (
 	1. export dbus message
 */
 
-var logger *log.Logger
-
 type Launch struct {
 	basic exportBasic
+
+	// save module handler
+	collector collect.BaseCollector
+	config    config.BaseConfig
+	writer    writer.BaseWriter
+
+	// queue offer data queue to write data to database or webserver
+	queue queue.BaseQueue
 }
 
 func NewLaunch() *Launch {
@@ -26,12 +34,22 @@ func NewLaunch() *Launch {
 	return lch
 }
 
-// init setting
-func init() {
-	// init log level
-	logger = log.NewLogger("system/user-exp")
-	logger.SetLogLevel(log.LevelDebug)
+// GetCollector collector use for collect data
+func (lau *Launch) GetCollector() collect.BaseCollector {
+	return lau.collector
+}
 
-	// init global config
-	_ = config.GetInstance()
+// GetConfig config to manage all config
+func (lau *Launch) GetConfig() config.BaseConfig {
+	return lau.config
+}
+
+// GetWriter writer to write data to web or data base
+func (lau *Launch) GetWriter() writer.BaseWriter {
+	return lau.writer
+}
+
+// GetQueue que to store and pop data into database
+func (lau *Launch) GetQueue() queue.BaseQueue {
+	return lau.queue
 }

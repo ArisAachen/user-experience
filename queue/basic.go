@@ -1,6 +1,9 @@
 package queue
 
-import "github.com/ArisAachen/experience/writer"
+import (
+	"github.com/ArisAachen/experience/define"
+	"github.com/ArisAachen/experience/writer"
+)
 
 // BaseQueueHandler push message to queue and handle writer callback
 // push data to message queue, attach handler to msg,
@@ -8,11 +11,18 @@ import "github.com/ArisAachen/experience/writer"
 // queue handler could be config, collector and database(not sure now)
 type BaseQueueHandler interface {
 	GetInterface() string
-	Handler(base BaseQueue, msg string)
+	Handler(base BaseQueue, result define.WriteResult)
 }
 
 // BaseQueue use to push data to queue, pop queue to writer
+// name
 type BaseQueue interface {
+	Push(name string, base BaseQueueHandler, msg string)
+	Pop(name string, sender writer.BaseWriter)
+}
+
+// BaseQueueItem include may items, each item write data to diff place
+type BaseQueueItem interface {
 	Push(base BaseQueueHandler, msg string)
 	Pop(sender writer.BaseWriter)
 }
