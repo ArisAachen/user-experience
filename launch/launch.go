@@ -45,11 +45,15 @@ func (lau *Launch) AddWriterItemModules() {
 		logger.Warningf("cant add writer modules, write hasn't been init")
 		return
 	}
+	// define need add modules
+	modules := []define.WriterItemModule{
+		define.WebItemWriter, define.DataBaseItemWriter,
+	}
 	// add modules
-	lau.writer.AddModule(string(define.WebItemWriter))
-	lau.writer.AddModule(string(define.DataBaseItemWriter))
-	logger.Debugf("writer modules add success, modules: %v", []define.WriterItemModule{define.WebItemWriter,
-		define.DataBaseItemWriter})
+	for _, module := range modules {
+		lau.config.AddModule(string(module))
+	}
+	logger.Debugf("writer modules add success, modules: %v", modules)
 }
 
 // AddQueueItemModules add queue item to queue
@@ -59,11 +63,15 @@ func (lau *Launch) AddQueueItemModules() {
 		logger.Warningf("cant add queue modules, queue hasn't been init")
 		return
 	}
+	// define need add modules
+	modules := []define.QueueItemModule{
+		define.WebItemQueue, define.DataBaseItemQueue,
+	}
 	// add modules
-	lau.queue.AddModule(string(define.WebItemQueue))
-	lau.queue.AddModule(string(define.DataBaseItemQueue))
-	logger.Debugf("queue modules add success, modules: %v", []define.QueueItemModule{define.WebItemQueue,
-		define.DataBaseItemQueue})
+	for _, module := range modules {
+		lau.config.AddModule(string(module))
+	}
+	logger.Debugf("queue modules add success, modules: %v", modules)
 }
 
 // AddConfigItemModules add config item to config
@@ -73,12 +81,15 @@ func (lau *Launch) AddConfigItemModules() {
 		logger.Warningf("cant add queue modules, queue hasn't been init")
 		return
 	}
-	// add modules
-	lau.config.AddModule(string(define.PostItemConfig))
-	lau.config.AddModule(string(define.SystemItemConfig))
-	lau.config.AddModule(string(define.HardwareItemConfig))
-	logger.Debugf("queue modules add success, modules: %v", []define.ConfigItemModule{define.PostItemConfig,
-		define.SystemItemConfig, define.HardwareItemConfig})
+	// define need add modules
+	modules := []define.ConfigItemModule{
+		define.PostItemConfig, define.SystemItemConfig, define.HardwareItemConfig,
+	}
+	// add module
+	for _, module := range modules {
+		lau.config.AddModule(string(module))
+	}
+	logger.Debugf("queue modules add success, modules: %v", modules)
 }
 
 // StartService start service
@@ -86,9 +97,24 @@ func (lau *Launch) StartService() {
 
 }
 
+// launchWriter to make sure data can be sent and write,
+// writer module should be init at beginning
+func (lau *Launch) launchWriter() {
+	// TODO check database or post interface exist
+}
+
+// launchQueue should be start
+// queue start second time after writer is started
+func (lau *Launch) launchQueue() {
+	// start pop data to webserver once data is push into queue
+	lau.queue.Pop(define.WebItemQueue, lau.writer)
+	// start pop data to database once data is push into queue
+	lau.queue.Pop(define.DataBaseItemQueue, lau.writer)
+}
+
 // refreshConfig decide if need to update config message
 func (lau *Launch) refreshConfig() {
-	// TODO this part can be more flexible, but since now, it is ok
+
 
 
 }

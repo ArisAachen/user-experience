@@ -53,26 +53,19 @@ func (cfg *Config) Load() {
 	}
 }
 
-// Update check all module if need update
-func (cfg *Config) Update() {
+// Update update modules update, the order is required
+// 1. update post interface
+// 2. update hardware uni id
+// 3. update develop-enabled login logout
+func (cfg *Config) Update(que abstract.BaseQueue) {
 	// TODO now load config order is const, but need more flexible realization
-
-	// now post update request to refresh post interface
-	item, ok := cfg.items[define.PostItemConfig]
-	if ok {
-		item.GetConfigPath()
+	// push data
+	modules := []define.ConfigItemModule{define.PostItemConfig, define.HardwareItemConfig, define.SystemItemConfig}
+	for _, module := range modules {
+		item, ok := cfg.items[module]
+		if ok && item.NeedUpdate() {
+			item.Push(que)
+		}
 	}
-
-	// check if hardware message has changed, if changed, need to request update uni id
-	item, ok = cfg.items[define.HardwareItemConfig]
-	if ok {
-
-	}
-
-	// post current develop-enabled
-	item, ok = cfg.items[define.SystemItemConfig]
-	if ok {
-
-	}
-
+	logger.Debug("config update request finished")
 }

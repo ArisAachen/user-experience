@@ -14,7 +14,6 @@ const (
 	HwCfgFile   = BaseCfgFile + "hardware"
 )
 
-
 // WriteResultCode code indicate diff write result
 type WriteResultCode int
 
@@ -59,3 +58,26 @@ const (
 	DataBaseItemQueue QueueItemModule = "database queue"
 )
 
+// RequestMsg the message to write,
+// message has priority, highest priority must sent at first
+// now priority is
+// 0. must sent (change experience state)
+// 1. update interface
+// 2. update hardware uni id
+// 3. login and logout
+// 4. simple data
+type RequestMsg struct {
+	Priority RequestPriority
+	Msg      string
+}
+
+// RequestPriority priority to send data
+type RequestPriority int
+
+const (
+	Must RequestPriority = iota
+	High
+	Middle
+	Simple
+	Low
+)

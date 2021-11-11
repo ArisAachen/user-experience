@@ -102,3 +102,9 @@ func (hc *hardwareCfg) GetConfigPath() string {
 func (hc *hardwareCfg) NeedUpdate() bool {
 	return true
 }
+
+
+// Push for update interface, should push data to webserver,
+func (hc *hardwareCfg) Push(que abstract.BaseQueue) {
+
+}

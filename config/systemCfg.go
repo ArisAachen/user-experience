@@ -95,8 +95,12 @@ func (sys *sysCfg) GetConfigPath() string {
 	return ""
 }
 
-
 // NeedUpdate when system config changed, should call update
 func (sys *sysCfg) NeedUpdate() bool {
 	return true
+}
+
+// Push for update interface, should push data to webserver,
+func (sys *sysCfg) Push(que abstract.BaseQueue) {
+
 }

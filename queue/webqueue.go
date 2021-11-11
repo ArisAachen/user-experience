@@ -29,9 +29,9 @@ func newWebQueue() *WebQueueItem {
 }
 
 // Push data to queue
-func (web *WebQueueItem) Push(handler abstract.BaseQueueHandler, msg string) {
+func (web *WebQueueItem) Push(handler abstract.BaseQueueHandler, msg define.RequestMsg) {
 	// push data to queue
-	web.queue.push(handler, msg)
+	web.queue.push(handler, msg.Msg)
 
 	// notify this queue is not empty
 	web.cond.Signal()

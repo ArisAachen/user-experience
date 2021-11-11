@@ -21,7 +21,7 @@ func NewQueue(launch *launch.Launch) *Queue {
 	return que
 }
 
-func (que *Queue) Push(module define.QueueItemModule, base abstract.BaseQueueHandler, msg string) {
+func (que *Queue) Push(module define.QueueItemModule, base abstract.BaseQueueHandler, msg define.RequestMsg) {
 	// find item to push data
 	item, ok := que.items[module]
 	if !ok {

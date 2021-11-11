@@ -16,13 +16,13 @@ type BaseQueueHandler interface {
 // BaseQueue use to push data to queue, pop queue to writer
 // name
 type BaseQueue interface {
-	Push(module define.QueueItemModule, base BaseQueueHandler, msg string)
+	Push(module define.QueueItemModule, base BaseQueueHandler, msg define.RequestMsg)
 	Pop(module define.QueueItemModule, sender BaseWriter)
 	Module
 }
 
 // BaseQueueItem include may items, each item write data to diff place
 type BaseQueueItem interface {
-	Push(base BaseQueueHandler, msg string)
+	Push(base BaseQueueHandler, msg define.RequestMsg)
 	Pop(sender BaseWriter)
 }

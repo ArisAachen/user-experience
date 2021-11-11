@@ -76,8 +76,17 @@ func (st *postCfg) name() string {
 	return "SystemConfig"
 }
 
+// Handler post interface is a tmp request,
+// so these request will not save to database even sent failed
 func (st *postCfg) Handler(base abstract.BaseQueue, result define.WriteResult) {
-	base.Push(define.DataBaseItemQueue, st, "")
+	if result.ResultCode != define.WriteResultSuccess {
+		logger.Warningf("update interface failed, reason code: %v", result.ResultCode)
+		return
+	}
+
+
+
+	// base.Push(define.DataBaseItemQueue, st, "")
 }
 
 func (st *postCfg) GetInterface() string {
@@ -85,7 +94,10 @@ func (st *postCfg) GetInterface() string {
 	return ""
 }
 
-func (st *postCfg) push(queue abstract.BaseQueue) {
+// Push for update interface, should push data to webserver,
+func (st *postCfg) Push(que abstract.BaseQueue) {
+
+
 
 }
 
