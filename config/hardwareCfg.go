@@ -6,8 +6,8 @@ import (
 	"os"
 	"sync"
 
+	"github.com/ArisAachen/experience/abstract"
 	"github.com/ArisAachen/experience/define"
-	"github.com/ArisAachen/experience/queue"
 	"github.com/golang/protobuf/proto"
 )
 
@@ -77,7 +77,7 @@ func (hc *hardwareCfg) name() string {
 }
 
 // Handler use to handle write result
-func (hc *hardwareCfg) Handler(base queue.BaseQueue, result define.WriteResult) {
+func (hc *hardwareCfg) Handler(base abstract.BaseQueue, result define.WriteResult) {
 	// for hardware config, write data to web sender failed,
 	// should write data to database
 	base.Push("", nil, "")
@@ -88,6 +88,17 @@ func (hc *hardwareCfg) GetInterface() string {
 	return ""
 }
 
-func (hc *hardwareCfg) push(queue queue.BaseQueue) {
+func (hc *hardwareCfg) push(queue abstract.BaseQueue) {
 
+}
+
+func (hc *hardwareCfg) GetConfigPath() string {
+
+	return ""
+}
+
+// NeedUpdate only when hardware message changed, should call update
+// TODO
+func (hc *hardwareCfg) NeedUpdate() bool {
+	return true
 }

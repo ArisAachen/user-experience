@@ -206,7 +206,7 @@ func (x *HardwareInfo) GetNetwork() *Obj {
 	return nil
 }
 
-// save post interface
+// save post abstract
 type PostDomain struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

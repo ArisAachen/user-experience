@@ -1,9 +1,13 @@
 package queue
 
-import "sync"
+import (
+	"sync"
+
+	"github.com/ArisAachen/experience/abstract"
+)
 
 type body struct {
-	handler BaseQueueHandler
+	handler abstract.BaseQueueHandler
 	msg     string
 }
 
@@ -59,7 +63,7 @@ func (que *queue) reset() {
 }
 
 // push body to queue
-func (que *queue) push(handler BaseQueueHandler, msg string) {
+func (que *queue) push(handler abstract.BaseQueueHandler, msg string) {
 	// lock
 	que.lock.Lock()
 	defer que.lock.Unlock()
@@ -89,7 +93,7 @@ func (que *queue) push(handler BaseQueueHandler, msg string) {
 
 // push head data, in some case, emergency data should be sent as quick as possible
 // so these data should push to head
-func (que *queue) pushHead(handler BaseQueueHandler, msg string) {
+func (que *queue) pushHead(handler abstract.BaseQueueHandler, msg string) {
 	// lock
 	que.lock.Lock()
 	defer que.lock.Unlock()

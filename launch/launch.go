@@ -1,8 +1,9 @@
 package launch
 
 import (
-	"github.com/ArisAachen/experience/collect"
+	"github.com/ArisAachen/experience/abstract"
 	"github.com/ArisAachen/experience/config"
+	"github.com/ArisAachen/experience/define"
 	"github.com/ArisAachen/experience/queue"
 	"github.com/ArisAachen/experience/writer"
 )
@@ -16,40 +17,78 @@ import (
 */
 
 type Launch struct {
-	basic exportBasic
-
 	// save module handler
-	collector collect.BaseCollector
-	config    config.BaseConfig
-	writer    writer.BaseWriter
-
-	// queue offer data queue to write data to database or webserver
-	queue queue.BaseQueue
+	collector abstract.BaseCollector
+	config    abstract.BaseConfig
+	writer    abstract.BaseWriter
+	queue     abstract.BaseQueue
 }
 
 func NewLaunch() *Launch {
 	lch := &Launch{
-		basic: new(experience),
 	}
 	return lch
 }
 
-// GetCollector collector use for collect data
-func (lau *Launch) GetCollector() collect.BaseCollector {
-	return lau.collector
+// Init ref module
+func (lau *Launch) Init() {
+	// TODO
+	lau.writer = writer.NewWriter(nil)
+	lau.queue = queue.NewQueue(nil)
+	lau.config = config.NewConfig(nil)
 }
 
-// GetConfig config to manage all config
-func (lau *Launch) GetConfig() config.BaseConfig {
-	return lau.config
+// AddWriterItemModules add writer item to module
+// now only has two module: web sender and database writer
+func (lau *Launch) AddWriterItemModules() {
+	if lau.writer == nil {
+		logger.Warningf("cant add writer modules, write hasn't been init")
+		return
+	}
+	// add modules
+	lau.writer.AddModule(string(define.WebItemWriter))
+	lau.writer.AddModule(string(define.DataBaseItemWriter))
+	logger.Debugf("writer modules add success, modules: %v", []define.WriterItemModule{define.WebItemWriter,
+		define.DataBaseItemWriter})
 }
 
-// GetWriter writer to write data to web or data base
-func (lau *Launch) GetWriter() writer.BaseWriter {
-	return lau.writer
+// AddQueueItemModules add queue item to queue
+// now only has two module: web queue and database queue
+func (lau *Launch) AddQueueItemModules() {
+	if lau.queue == nil {
+		logger.Warningf("cant add queue modules, queue hasn't been init")
+		return
+	}
+	// add modules
+	lau.queue.AddModule(string(define.WebItemQueue))
+	lau.queue.AddModule(string(define.DataBaseItemQueue))
+	logger.Debugf("queue modules add success, modules: %v", []define.QueueItemModule{define.WebItemQueue,
+		define.DataBaseItemQueue})
 }
 
-// GetQueue que to store and pop data into database
-func (lau *Launch) GetQueue() queue.BaseQueue {
-	return lau.queue
+// AddConfigItemModules add config item to config
+// now only has three module: post system hardware
+func (lau *Launch) AddConfigItemModules() {
+	if lau.queue == nil {
+		logger.Warningf("cant add queue modules, queue hasn't been init")
+		return
+	}
+	// add modules
+	lau.config.AddModule(string(define.PostItemConfig))
+	lau.config.AddModule(string(define.SystemItemConfig))
+	lau.config.AddModule(string(define.HardwareItemConfig))
+	logger.Debugf("queue modules add success, modules: %v", []define.ConfigItemModule{define.PostItemConfig,
+		define.SystemItemConfig, define.HardwareItemConfig})
+}
+
+// StartService start service
+func (lau *Launch) StartService() {
+
+}
+
+// refreshConfig decide if need to update config message
+func (lau *Launch) refreshConfig() {
+	// TODO this part can be more flexible, but since now, it is ok
+
+
 }

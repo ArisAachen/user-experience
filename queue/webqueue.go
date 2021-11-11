@@ -3,9 +3,9 @@ package queue
 import (
 	"sync"
 
+	"github.com/ArisAachen/experience/abstract"
 	"github.com/ArisAachen/experience/define"
 	"github.com/ArisAachen/experience/launch"
-	"github.com/ArisAachen/experience/writer"
 )
 
 // WebQueueItem collect messages from
@@ -29,7 +29,7 @@ func newWebQueue() *WebQueueItem {
 }
 
 // Push data to queue
-func (web *WebQueueItem) Push(handler BaseQueueHandler, msg string) {
+func (web *WebQueueItem) Push(handler abstract.BaseQueueHandler, msg string) {
 	// push data to queue
 	web.queue.push(handler, msg)
 
@@ -38,7 +38,7 @@ func (web *WebQueueItem) Push(handler BaseQueueHandler, msg string) {
 }
 
 // Pop pop data to writer
-func (web *WebQueueItem) Pop(writer writer.BaseWriter) {
+func (web *WebQueueItem) Pop(writer abstract.BaseWriter) {
 	// check if writer is valid
 	if writer == nil {
 		logger.Warning("writer failed, writer is nil")
@@ -57,7 +57,6 @@ func (web *WebQueueItem) Pop(writer writer.BaseWriter) {
 			continue
 		}
 		// write msg to writer
-		// TODO handler is not nil
-		writer.Write(define.WebItemWriter, nil, elem.msg)
+		writer.Write(define.WebItemWriter, elem.handler, elem.msg)
 	}
 }

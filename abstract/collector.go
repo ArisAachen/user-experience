@@ -1,4 +1,4 @@
-package collect
+package abstract
 
 type BaseCollector interface {
 }

@@ -32,7 +32,7 @@ message HardwareInfo {
     }
 }
 
-// save post interface
+// save post abstract
 message PostDomain {
     string url_path = 1;
     uint64 time = 2;

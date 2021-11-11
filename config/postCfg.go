@@ -6,8 +6,8 @@ import (
 	"os"
 	"sync"
 
+	"github.com/ArisAachen/experience/abstract"
 	"github.com/ArisAachen/experience/define"
-	"github.com/ArisAachen/experience/queue"
 	"github.com/golang/protobuf/proto"
 )
 
@@ -76,8 +76,8 @@ func (st *postCfg) name() string {
 	return "SystemConfig"
 }
 
-func (st *postCfg) Handler(base queue.BaseQueue, msg string) {
-	// base.Push(nil, msg)
+func (st *postCfg) Handler(base abstract.BaseQueue, result define.WriteResult) {
+	base.Push(define.DataBaseItemQueue, st, "")
 }
 
 func (st *postCfg) GetInterface() string {
@@ -85,6 +85,16 @@ func (st *postCfg) GetInterface() string {
 	return ""
 }
 
-func (st *postCfg) push(queue queue.BaseQueue) {
+func (st *postCfg) push(queue abstract.BaseQueue) {
 
+}
+
+func (st *postCfg) GetConfigPath() string {
+
+	return ""
+}
+
+// NeedUpdate post config should be call in every boot
+func (st *postCfg) NeedUpdate() bool {
+	return true
 }

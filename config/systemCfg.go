@@ -6,8 +6,8 @@ import (
 	"os"
 	"sync"
 
+	"github.com/ArisAachen/experience/abstract"
 	"github.com/ArisAachen/experience/define"
-	"github.com/ArisAachen/experience/queue"
 	"github.com/golang/protobuf/proto"
 )
 
@@ -76,8 +76,9 @@ func (sys *sysCfg) name() string {
 	return "SystemConfig"
 }
 
-func (sys *sysCfg) Handler(base queue.BaseQueue, msg string) {
-	// base.Push(nil, msg)
+// Handler handle web sender result
+func (sys *sysCfg) Handler(base abstract.BaseQueue, result define.WriteResult) {
+	base.Push(define.DataBaseItemQueue, nil, "")
 }
 
 func (sys *sysCfg) GetInterface() string {
@@ -85,6 +86,17 @@ func (sys *sysCfg) GetInterface() string {
 	return ""
 }
 
-func (sys *sysCfg) push(queue queue.BaseQueue) {
+func (sys *sysCfg) push(queue abstract.BaseQueue) {
 
+}
+
+func (sys *sysCfg) GetConfigPath() string {
+
+	return ""
+}
+
+
+// NeedUpdate when system config changed, should call update
+func (sys *sysCfg) NeedUpdate() bool {
+	return true
 }

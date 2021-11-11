@@ -1,8 +1,7 @@
-package queue
+package abstract
 
 import (
 	"github.com/ArisAachen/experience/define"
-	"github.com/ArisAachen/experience/writer"
 )
 
 // BaseQueueHandler push message to queue and handle writer callback
@@ -17,12 +16,13 @@ type BaseQueueHandler interface {
 // BaseQueue use to push data to queue, pop queue to writer
 // name
 type BaseQueue interface {
-	Push(name string, base BaseQueueHandler, msg string)
-	Pop(name string, sender writer.BaseWriter)
+	Push(module define.QueueItemModule, base BaseQueueHandler, msg string)
+	Pop(module define.QueueItemModule, sender BaseWriter)
+	Module
 }
 
 // BaseQueueItem include may items, each item write data to diff place
 type BaseQueueItem interface {
 	Push(base BaseQueueHandler, msg string)
-	Pop(sender writer.BaseWriter)
+	Pop(sender BaseWriter)
 }
