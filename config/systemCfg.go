@@ -78,7 +78,10 @@ func (sys *sysCfg) name() string {
 
 // Handler handle web sender result
 func (sys *sysCfg) Handler(base abstract.BaseQueue, result define.WriteResult) {
-	base.Push(define.DataBaseItemQueue, nil, "")
+	var msg define.RequestMsg
+
+	// when cant write data into database, dont need to handle again, just drop this message
+	base.Push(define.DataBaseItemQueue, nil, msg)
 }
 
 func (sys *sysCfg) GetInterface() string {

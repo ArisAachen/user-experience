@@ -77,16 +77,20 @@ func (web *webWriterItem) Write(url string, msg string) define.WriteResult {
 	// parse response code
 	// it is ok here, dont use state model at all
 	switch define.RespCode(rcv.Code) {
+	// webserver response success, data is valid and accepted by server successfully
 	case define.RespSuccess:
 		result.ResultCode = define.WriteResultSuccess
 		result.Msg = rcv.Data
 		logger.Debug("data has sent successfully")
+	//
 	case define.RespVfnInvalid:
 		result.ResultCode = define.WriteResultParamInvalid
 		logger.Warning("data drop by web server, verification is not valid")
+	// webserver has receive data, but data is dropped because param is not valid
 	case define.RespParamInvalid:
 		result.ResultCode = define.WriteResultParamInvalid
 		logger.Warning("data drop by web server, param is not valid")
+	// not sure what happens, maybe webserver response unexpected message
 	default:
 		result.ResultCode = define.WriteResultUnknown
 		logger.Warningf("web server response unknown code: %v", rcv.Code)

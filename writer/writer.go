@@ -38,6 +38,7 @@ func (wr *Writer) Write(name define.WriterItemModule, handler abstract.BaseQueue
 	var result define.WriteResult
 
 	// write data to writer 3 times
+	// TODO these code can be optimize, using "for and circle" seems no good design because lack of flexibility
 	for {
 		// when circle arrive 3, should go to failed
 		if circle == 3 {
@@ -46,7 +47,6 @@ func (wr *Writer) Write(name define.WriterItemModule, handler abstract.BaseQueue
 		// write data
 		logger.Debugf("begin to write data, circle: %v", circle)
 		result = item.Write(handler.GetInterface(), msg)
-		// TODO: here can be written by state module
 		// only sent failed can active retry write
 		if result.ResultCode != define.WriteResultWriteFailed {
 			circle++
