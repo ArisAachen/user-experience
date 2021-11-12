@@ -39,9 +39,9 @@ func newWebWriter() *webWriterItem {
 }
 
 // Write write message to web
-func (web *webWriterItem) Write(url string, msg string) define.WriteResult {
+func (web *webWriterItem) Write(url string, msg define.CryptResult) define.WriteResult {
 	var result define.WriteResult
-	reader := strings.NewReader(msg)
+	reader := strings.NewReader(msg.Data)
 	// post data
 	resp, err := web.client.Post(url, "application/json", reader)
 	// post data failed at this time

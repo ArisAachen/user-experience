@@ -38,7 +38,7 @@ func (web *WebQueueItem) Push(handler abstract.BaseQueueHandler, msg define.Requ
 }
 
 // Pop pop data to writer
-func (web *WebQueueItem) Pop(writer abstract.BaseWriter) {
+func (web *WebQueueItem) Pop(crypt abstract.BaseCryptor, writer abstract.BaseWriter) {
 	// check if writer is valid
 	if writer == nil {
 		logger.Warning("writer failed, writer is nil")
@@ -56,7 +56,15 @@ func (web *WebQueueItem) Pop(writer abstract.BaseWriter) {
 		if elem == nil {
 			continue
 		}
+		// use Cryptor to crypt data
+		result, err := crypt.Encode(elem.msg)
+		if err != nil {
+			// when data encrypt failed, just drop this data
+			// also this module can return to handler, if some special handle is needed
+			logger.Warningf("failed to crypt data, err: %v", err)
+			continue
+		}
 		// write msg to writer
-		writer.Write(define.WebItemWriter, elem.handler, elem.msg)
+		writer.Write(define.WebItemWriter, elem.handler, result)
 	}
 }

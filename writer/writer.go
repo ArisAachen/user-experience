@@ -25,7 +25,7 @@ func NewWriter(launch *launch.Launch) *Writer {
 }
 
 // Write write data to diff writer item according to name
-func (wr *Writer) Write(name define.WriterItemModule, handler abstract.BaseQueueHandler, msg string) {
+func (wr *Writer) Write(name define.WriterItemModule, handler abstract.BaseQueueHandler, msg define.CryptResult) {
 	// find item to write
 	item, ok := wr.items[name]
 	if !ok {

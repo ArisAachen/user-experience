@@ -15,6 +15,7 @@ func main() {
 
 	// init launch and add modules
 	lch.Init()
+	lch.AddCryptItemModules()
 	lch.AddWriterItemModules()
 	lch.AddQueueItemModules()
 	lch.AddConfigItemModules()

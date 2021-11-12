@@ -2,6 +2,11 @@ package abstract
 
 import "github.com/ArisAachen/experience/define"
 
+type BaseCryptor interface {
+	Encoder
+	Decoder
+}
+
 // Encoder use to encrypt data
 // now has two type encoder: aes-cbc rsa
 type Encoder interface {

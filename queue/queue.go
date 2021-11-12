@@ -33,7 +33,7 @@ func (que *Queue) Push(module define.QueueItemModule, base abstract.BaseQueueHan
 }
 
 // Pop begin pop data to
-func (que *Queue) Pop(module define.QueueItemModule, sender abstract.BaseWriter) {
+func (que *Queue) Pop(module define.QueueItemModule, crypt abstract.BaseCryptor, sender abstract.BaseWriter) {
 	// find item to pop data
 	item, ok := que.items[module]
 	if !ok {
@@ -41,7 +41,7 @@ func (que *Queue) Pop(module define.QueueItemModule, sender abstract.BaseWriter)
 		return
 	}
 	// push data
-	item.Pop(sender)
+	item.Pop(crypt, sender)
 }
 
 // AddModule add queue module item into queue

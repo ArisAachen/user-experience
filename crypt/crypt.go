@@ -12,26 +12,37 @@ import (
 
 	"github.com/ArisAachen/experience/common"
 	"github.com/ArisAachen/experience/define"
+	"github.com/ArisAachen/experience/launch"
 	"github.com/golang/protobuf/proto"
 )
 
-type Crypt struct {
+type Cryptor struct {
 	// TODO public key and private key can optimize
 	publicKey  *rsa.PublicKey
 	privateKey *rsa.PrivateKey
 
-	lock sync.Mutex
+	// launch is not used now, but just store this, so that all module has some create func
+	launch *launch.Launch
+	lock   sync.Mutex
+}
+
+// NewCryptor create crypto obj
+func NewCryptor(launch *launch.Launch) *Cryptor {
+	cy := &Cryptor{
+		launch: launch,
+	}
+	return cy
 }
 
 // SaveToFile save rsa key to file
 // now rsa key is const,
 // but in the future, may allow update rsa key from webserver
-func (cy *Crypt) SaveToFile(filename string) error {
+func (cy *Cryptor) SaveToFile(filename string) error {
 	return nil
 }
 
 // LoadFromFile load rsa key from config file
-func (cy *Crypt) LoadFromFile(filename string) error {
+func (cy *Cryptor) LoadFromFile(filename string) error {
 	// lock op
 	//cy.lock.Lock()
 	//defer cy.lock.Unlock()
@@ -82,7 +93,7 @@ func (cy *Crypt) LoadFromFile(filename string) error {
 }
 
 // Encode encode sender to web data
-func (cy *Crypt) Encode(msg string) (define.CryptResult, error) {
+func (cy *Cryptor) Encode(msg string) (define.CryptResult, error) {
 	// create crypt result
 	var result define.CryptResult
 	// check if public key is valid
@@ -118,7 +129,7 @@ func (cy *Crypt) Encode(msg string) (define.CryptResult, error) {
 }
 
 // Decode decode data from web server
-func (cy *Crypt) Decode(msg define.CryptResult) (string, error) {
+func (cy *Cryptor) Decode(msg define.CryptResult) (string, error) {
 	// use rsa to decode key
 	// url decode key
 	key, err := url.QueryUnescape(msg.Key)
