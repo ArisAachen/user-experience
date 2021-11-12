@@ -55,7 +55,7 @@ func (wr *Writer) Write(name define.WriterItemModule, handler abstract.BaseQueue
 	}
 	// handler write result, now only write web server failed case should be
 	// TODO
-	handler.Handler(nil, result)
+	go handler.Handler(nil, result)
 }
 
 // AddItem add ref item to item map

@@ -68,3 +68,13 @@ func (web *WebQueueItem) Pop(crypt abstract.BaseCryptor, writer abstract.BaseWri
 		writer.Write(define.WebItemWriter, elem.handler, result)
 	}
 }
+
+// Block Block if write is block by queue
+func (web *WebQueueItem) block() bool {
+
+	return false
+}
+
+func (web *WebQueueItem) release() {
+
+}
