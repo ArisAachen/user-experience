@@ -58,3 +58,11 @@ message SysCfg {
     bool user_exp = 2;
     uint64 apt = 3;
 }
+
+
+
+// RSAKey store rsa public key and private key
+message RsaKey {
+    string public = 1;
+    string private = 2;
+}

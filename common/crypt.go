@@ -3,41 +3,19 @@ package common
 import (
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/rand"
+	"crypto/rsa"
 	"errors"
 	"fmt"
-	"math/rand"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/ArisAachen/experience/define"
 )
 
-// random use 'num char _' to create random 32 byte aes-cbc key
-func random(length int) string {
-	// check if size is valid
-	if length <= 0 {
-		return ""
-	}
-	// create random string
-	var result string
-	// get random seed
-	seed := rand.New(rand.NewSource(time.Now().UnixNano()))
-	// check randPool size
-	size := len(randPool)
-	if len(randPool) == 0 {
-		return ""
-	}
-	// random each ch
-	for index := 0; index < length; index++ {
-		result += string(randPool[seed.Intn(size)])
-	}
-	return result
-}
-
-// pkcsEncode use to padding pkcs data
+// PKCSEncode use to padding pkcs data
 // now pkcs encode use to encode pkcs7 and pkcs5(const blockSize 8)
-func pkcsEncode(msg string, blockSize int) string {
+func PKCSEncode(msg string, blockSize int) string {
 	// cal padding size
 	size := len(msg)
 	padSize := blockSize - (size % blockSize)
@@ -53,7 +31,7 @@ func pkcsEncode(msg string, blockSize int) string {
 
 // PKCSDecode use to unPadding pkcs data
 // now pkcs decode use to decode pkcs7 and pkcs5(const blockSize 8)
-func pkcsDecode(msg string) (result string, err error) {
+func PKCSDecode(msg string) (result string, err error) {
 	// in case slice out of bounder
 	defer func() {
 		// try to catch panic
@@ -81,13 +59,13 @@ func pkcsDecode(msg string) (result string, err error) {
 // AesEncode use aes-cbc encode msg,
 // also aes-cbc should call after padding
 // aes cbc key is random created every time
-func AesEncode(msg string) (define.AesResult, error) {
+func AesEncode(msg string) (define.CryptResult, error) {
 	// in case slice out of bounder
 	// this will not happens, but maintainer make stupid mistake
 	defer func() {
 	}()
 	// create 32 byte aes-cbc key
-	var result define.AesResult
+	var result define.CryptResult
 	key := random(define.AesCbcKeySize)
 	iv := key[:define.AesCbcIvVec]
 	// save key
@@ -111,7 +89,7 @@ func AesEncode(msg string) (define.AesResult, error) {
 
 // AesDecode use aes-cbc decode msg
 // after aes-cbc decode, also should use un-padding to parse data
-func AesDecode(msg define.AesResult) (string, error) {
+func AesDecode(msg define.CryptResult) (string, error) {
 	// in case slice out of bounder
 	// this will not happens, but maintainer make stupid mistake
 	defer func() {
@@ -135,4 +113,34 @@ func AesDecode(msg define.AesResult) (string, error) {
 	var result string
 	mode.CryptBlocks([]byte(result), []byte(msg.Data))
 	return result, nil
+}
+
+// RSAEncode use rsa to encode data
+func RSAEncode(key *rsa.PublicKey, msg string) (string, error) {
+	// check if public key and message is valid
+	if key == nil || msg == "" {
+		return "", errors.New("rsa encode param is invalid")
+	}
+	// use rsa to encode msg
+	result, err := rsa.EncryptPKCS1v15(rand.Reader, key, []byte(msg))
+	if err != nil {
+		return "", err
+	}
+	// encode rsa message success
+	return string(result), nil
+}
+
+// RSADecode use rsa to decode data
+func RSADecode(key *rsa.PrivateKey, msg string) (string, error) {
+	// check if private key and message is valid
+	if key == nil || msg == "" {
+		return "", errors.New("rsa encode param is invalid")
+	}
+	// use rsa to decode msg
+	result, err := rsa.DecryptPKCS1v15(rand.Reader, key, []byte(msg))
+	if err != nil {
+		return "", err
+	}
+	// decode rsa message success
+	return string(result), nil
 }

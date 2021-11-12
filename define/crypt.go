@@ -1,6 +1,6 @@
 package define
 
-type AesResult struct {
+type CryptResult struct {
 	Key  string
 	Data string
 }

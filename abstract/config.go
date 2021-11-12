@@ -1,7 +1,5 @@
 package abstract
 
-import "github.com/ArisAachen/experience/abstract"
-
 // BaseCfgItem the abstract config, indicate the abstract methods
 // all config should realize
 type BaseCfgItem interface {
@@ -12,15 +10,14 @@ type BaseCfgItem interface {
 	NeedUpdate() bool
 
 	// Push push data to ref writer
-	Push(que abstract.BaseQueue)
+	Push(que BaseQueue)
 
-	// SaveToFile and LoadFromFile save and load config from file
-	SaveToFile(filename string) error
-	LoadFromFile(filename string) error
+	// FileLoader the load config file interface
+	FileLoader
 }
 
 type BaseConfig interface {
 	Load()
-	Update(que abstract.BaseQueue)
+	Update(que BaseQueue)
 	Module
 }
