@@ -17,12 +17,12 @@ type BaseQueueHandler interface {
 // name
 type BaseQueue interface {
 	Push(module define.QueueItemModule, base BaseQueueHandler, msg define.RequestMsg)
-	Pop(module define.QueueItemModule, crypt BaseCryptor, sender BaseWriter)
+	Pop(module define.QueueItemModule, controller BaseController, crypt BaseCryptor, sender BaseWriter)
 	Module
 }
 
 // BaseQueueItem include may items, each item write data to diff place
 type BaseQueueItem interface {
 	Push(base BaseQueueHandler, msg define.RequestMsg)
-	Pop(crypt BaseCryptor, writer BaseWriter)
+	Pop(crypt BaseCryptor, controller BaseController, writer BaseWriter)
 }

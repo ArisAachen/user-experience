@@ -31,14 +31,14 @@ func newWebQueue() *WebQueueItem {
 // Push data to queue
 func (web *WebQueueItem) Push(handler abstract.BaseQueueHandler, msg define.RequestMsg) {
 	// push data to queue
-	web.queue.push(handler, msg.Msg)
+	web.queue.push(handler, msg)
 
 	// notify this queue is not empty
 	web.cond.Signal()
 }
 
 // Pop pop data to writer
-func (web *WebQueueItem) Pop(crypt abstract.BaseCryptor, writer abstract.BaseWriter) {
+func (web *WebQueueItem) Pop(crypt abstract.BaseCryptor, controller abstract.BaseController, writer abstract.BaseWriter) {
 	// check if writer is valid
 	if writer == nil {
 		logger.Warning("writer failed, writer is nil")
@@ -57,24 +57,18 @@ func (web *WebQueueItem) Pop(crypt abstract.BaseCryptor, writer abstract.BaseWri
 			continue
 		}
 		// use Cryptor to crypt data
-		result, err := crypt.Encode(elem.msg)
+		result, err := crypt.Encode(elem.msg.Msg)
 		if err != nil {
 			// when data encrypt failed, just drop this data
 			// also this module can return to handler, if some special handle is needed
 			logger.Warningf("failed to crypt data, err: %v", err)
 			continue
 		}
+		// monitor rule
+		controller.Monitor(elem.msg.Rule)
+		// set current rule
+		controller.Invoke(elem.msg.Rule)
 		// write msg to writer
 		writer.Write(define.WebItemWriter, elem.handler, result)
 	}
-}
-
-// Block Block if write is block by queue
-func (web *WebQueueItem) block() bool {
-
-	return false
-}
-
-func (web *WebQueueItem) release() {
-
 }

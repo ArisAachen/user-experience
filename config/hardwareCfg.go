@@ -80,7 +80,11 @@ func (hc *hardwareCfg) name() string {
 func (hc *hardwareCfg) Handler(base abstract.BaseQueue, result define.WriteResult) {
 	// for hardware config, write data to web sender failed,
 	// should write data to database
-	base.Push("", nil, "")
+	var msg define.RequestMsg
+
+	// TODO release rule here
+
+	base.Push("", nil, msg)
 }
 
 func (hc *hardwareCfg) GetInterface() string {
@@ -102,7 +106,6 @@ func (hc *hardwareCfg) GetConfigPath() string {
 func (hc *hardwareCfg) NeedUpdate() bool {
 	return true
 }
-
 
 // Push for update interface, should push data to webserver,
 func (hc *hardwareCfg) Push(que abstract.BaseQueue) {
