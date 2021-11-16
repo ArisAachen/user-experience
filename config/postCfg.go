@@ -2,6 +2,8 @@ package config
 
 import (
 	"bytes"
+	"encoding/json"
+	"github.com/ArisAachen/experience/crypt"
 	"io/ioutil"
 	"os"
 	"sync"
@@ -17,7 +19,7 @@ import (
 type postCfg struct {
 	// file lock
 	lock sync.Mutex
-	define.SysCfg
+	define.PostInterface
 }
 
 // SaveToFile save protobuf config to file
@@ -33,7 +35,7 @@ func (st *postCfg) SaveToFile(filename string) error {
 	}
 
 	// marshal config to buf
-	buf, err := proto.Marshal(&st.SysCfg)
+	buf, err := proto.Marshal(&st.PostInterface)
 	if err != nil {
 		return err
 	}
@@ -57,18 +59,11 @@ func (st *postCfg) LoadFromFile(filename string) error {
 	if err != nil {
 		return err
 	}
-	err = proto.Unmarshal(buf, &st.SysCfg)
+	err = proto.Unmarshal(buf, &st.PostInterface)
 	if err != nil {
 		return err
 	}
 	return nil
-}
-
-// check if hardware is changed, if is, should update
-func (st *postCfg) needUpdate() bool {
-	var update bool
-
-	return update
 }
 
 // name indicate hardware module nameS
@@ -78,15 +73,57 @@ func (st *postCfg) name() string {
 
 // Handler post interface is a tmp request,
 // so these request will not save to database even sent failed
-func (st *postCfg) Handler(base abstract.BaseQueue, result define.WriteResult) {
+func (st *postCfg) Handler(base abstract.BaseQueue, controller abstract.BaseController, result define.WriteResult) {
+	// update interface is strict rule
+	controller.Release(define.StrictRule)
+
+	// actually when post update interface not success, dont store it in database
 	if result.ResultCode != define.WriteResultSuccess {
 		logger.Warningf("update interface failed, reason code: %v", result.ResultCode)
 		return
 	}
 
+	// should marshal encrypt msg here
+	var cryptData define.CryptResult
+	err := json.Unmarshal(result.Msg, &cryptData)
+	if err != nil {
+		logger.Warningf("unmarshal encrypted post interface failed, err: %v", err)
+		return
+	}
 
+	// decrypt data
+	decry := crypt.NewCryptor(nil)
+	data, err := decry.Decode(cryptData)
+	if err != nil {
+		logger.Warningf("decode post interface message failed, err: %v", err)
+		return
+	}
 
-	// base.Push(define.DataBaseItemQueue, st, "")
+	// unmarshal update interface
+	var ifcSl []define.RcvInterface
+	err = json.Unmarshal([]byte(data), &ifcSl)
+	if err != nil {
+		logger.Warningf("unmarshal decrypted post interface failed, err: %v", err)
+		return
+	}
+
+	// save update url to config
+	var domains []*define.PostDomain
+	for _, ifc := range ifcSl {
+		domain := &define.PostDomain{
+			Time:    uint64(ifc.Update),
+			UrlPath: ifc.Ip,
+		}
+		domains = append(domains, domain)
+	}
+	st.Domains = domains
+
+	// save file to config
+	err = st.SaveToFile(st.GetConfigPath())
+	if err != nil {
+		logger.Warningf("save post interface config failed, err: %v", err)
+		return
+	}
 }
 
 func (st *postCfg) GetInterface() string {
@@ -97,13 +134,11 @@ func (st *postCfg) GetInterface() string {
 // Push for update interface, should push data to webserver,
 func (st *postCfg) Push(que abstract.BaseQueue) {
 
-
-
 }
 
+// GetConfigPath post interface config path
 func (st *postCfg) GetConfigPath() string {
-
-	return ""
+	return define.PostInterfacePath
 }
 
 // NeedUpdate post config should be call in every boot

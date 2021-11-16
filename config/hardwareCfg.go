@@ -77,13 +77,15 @@ func (hc *hardwareCfg) name() string {
 }
 
 // Handler use to handle write result
-func (hc *hardwareCfg) Handler(base abstract.BaseQueue, result define.WriteResult) {
+func (hc *hardwareCfg) Handler(base abstract.BaseQueue, controller abstract.BaseController, result define.WriteResult) {
+	// hardware update uni id is strict rule
+	controller.Release(define.StrictRule)
+
 	// for hardware config, write data to web sender failed,
 	// should write data to database
 	var msg define.RequestMsg
 
 	// TODO release rule here
-
 	base.Push("", nil, msg)
 }
 

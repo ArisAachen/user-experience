@@ -25,7 +25,7 @@ func NewWriter(launch *launch.Launch) *Writer {
 }
 
 // Write write data to diff writer item according to name
-func (wr *Writer) Write(name define.WriterItemModule, handler abstract.BaseQueueHandler, msg define.CryptResult) {
+func (wr *Writer) Write(name define.WriterItemModule, controller abstract.BaseController, handler abstract.BaseQueueHandler, msg define.CryptResult) {
 	// find item to write
 	item, ok := wr.items[name]
 	if !ok {
@@ -55,7 +55,7 @@ func (wr *Writer) Write(name define.WriterItemModule, handler abstract.BaseQueue
 	}
 	// handler write result, now only write web server failed case should be
 	// TODO
-	go handler.Handler(nil, result)
+	go handler.Handler(nil, controller, result)
 }
 
 // AddItem add ref item to item map

@@ -1,11 +1,13 @@
 package abstract
 
-import "github.com/ArisAachen/experience/define"
+import (
+	"github.com/ArisAachen/experience/define"
+)
 
 // BaseWriter indicate which writer to use
 // after write, call handler here
 type BaseWriter interface {
-	Write(name define.WriterItemModule, handler BaseQueueHandler, msg define.CryptResult)
+	Write(name define.WriterItemModule, controller BaseController, handler BaseQueueHandler, msg define.CryptResult)
 	Module
 }
 

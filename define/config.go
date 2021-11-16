@@ -110,3 +110,8 @@ const (
 	PostItemConfig     ConfigItemModule = "post"
 	SystemItemConfig   ConfigItemModule = "system"
 )
+
+const (
+	ConfigDir         = "/var/lib/deepin-user-experience"
+	PostInterfacePath = ConfigDir + "PostConfig"
+)

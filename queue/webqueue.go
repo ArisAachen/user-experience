@@ -69,6 +69,6 @@ func (web *WebQueueItem) Pop(crypt abstract.BaseCryptor, controller abstract.Bas
 		// set current rule
 		controller.Invoke(elem.msg.Rule)
 		// write msg to writer
-		writer.Write(define.WebItemWriter, elem.handler, result)
+		writer.Write(define.WebItemWriter, controller, elem.handler, result)
 	}
 }

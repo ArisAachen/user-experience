@@ -83,3 +83,12 @@ const (
 	LogInOutRequest
 	SimpleRequest
 )
+
+// Web Message
+
+// RcvInterface receive update post interface message from remote
+type RcvInterface struct {
+	Ip     string `json:"ip"`
+	Update int64  `json:"update"`
+}
+

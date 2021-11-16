@@ -10,7 +10,8 @@ import (
 // queue handler could be config, collector and database(not sure now)
 type BaseQueueHandler interface {
 	GetInterface() string
-	Handler(base BaseQueue, result define.WriteResult)
+	// SetInterface(ifc string)
+	Handler(base BaseQueue, controller BaseController, result define.WriteResult)
 }
 
 // BaseQueue use to push data to queue, pop queue to writer
