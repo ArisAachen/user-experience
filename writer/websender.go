@@ -2,6 +2,7 @@ package writer
 
 import (
 	"encoding/json"
+	"github.com/ArisAachen/experience/abstract"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -39,9 +40,17 @@ func newWebWriter() *webWriterItem {
 }
 
 // Write write message to web
-func (web *webWriterItem) Write(url string, msg define.CryptResult) define.WriteResult {
+func (web *webWriterItem) Write(crypt abstract.BaseCryptor, url string, msg string) define.WriteResult {
 	var result define.WriteResult
-	reader := strings.NewReader(msg.Data)
+	// use Cryptor to crypt data
+	cryResult, err := crypt.Encode(msg)
+	if err != nil {
+		// when data encrypt failed, just drop this data
+		// also this module can return to handler, if some special handle is needed
+		logger.Warningf("failed to crypt data, err: %v", err)
+		return result
+	}
+	reader := strings.NewReader(cryResult.Data)
 	// post data
 	resp, err := web.client.Post(url, "application/json", reader)
 	// post data failed at this time
@@ -82,7 +91,7 @@ func (web *webWriterItem) Write(url string, msg define.CryptResult) define.Write
 		result.ResultCode = define.WriteResultSuccess
 		result.Msg = rcv.Data
 		logger.Debug("data has sent successfully")
-	//
+	// web verification failed
 	case define.RespVfnInvalid:
 		result.ResultCode = define.WriteResultParamInvalid
 		logger.Warning("data drop by web server, verification is not valid")

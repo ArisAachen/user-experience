@@ -7,7 +7,7 @@ import (
 // BaseWriter indicate which writer to use
 // after write, call handler here
 type BaseWriter interface {
-	Write(name define.WriterItemModule, controller BaseController, handler BaseQueueHandler, msg define.CryptResult)
+	Write(name define.WriterItemModule, crypt BaseCryptor, controller BaseController, handler BaseQueueHandler, msg string)
 	Module
 }
 
@@ -15,5 +15,5 @@ type BaseWriter interface {
 // all writer handler should realize
 // path is the url of post web server or table name of database
 type BaseWriterItem interface {
-	Write(path string, msg define.CryptResult) define.WriteResult
+	Write(crypt BaseCryptor, path string, msg string) define.WriteResult
 }

@@ -25,7 +25,7 @@ func NewWriter(launch *launch.Launch) *Writer {
 }
 
 // Write write data to diff writer item according to name
-func (wr *Writer) Write(name define.WriterItemModule, controller abstract.BaseController, handler abstract.BaseQueueHandler, msg define.CryptResult) {
+func (wr *Writer) Write(name define.WriterItemModule, crypt abstract.BaseCryptor, controller abstract.BaseController, handler abstract.BaseQueueHandler, msg string) {
 	// find item to write
 	item, ok := wr.items[name]
 	if !ok {
@@ -46,7 +46,7 @@ func (wr *Writer) Write(name define.WriterItemModule, controller abstract.BaseCo
 		}
 		// write data
 		logger.Debugf("begin to write data, circle: %v", circle)
-		result = item.Write(handler.GetInterface(), msg)
+		result = item.Write(crypt, handler.GetInterface(), msg)
 		// only sent failed can active retry write
 		if result.ResultCode != define.WriteResultWriteFailed {
 			circle++

@@ -25,6 +25,8 @@ const (
 	WriteResultParamInvalid
 	WriteResultReadBodyFailed
 
+	WriteParseQueryFailed
+
 	WriteResultUnknown
 )
 
@@ -69,19 +71,20 @@ const (
 
 type RequestMsg struct {
 	Rule Rule
-	Pri  RequestPriority
+	Pri  RequestLevel
 	Msg  string
 }
 
-// RequestPriority priority to send data
-type RequestPriority int
+// RequestLevel priority to send data
+type RequestLevel int
 
 const (
-	UpdateIfcRequest RequestPriority = iota
+	UpdateIfcRequest RequestLevel = iota
 	UpdateUniRequest
 	ExpStateRequest
 	LogInOutRequest
 	SimpleRequest
+	NoneRequest
 )
 
 // Web Message
@@ -92,3 +95,104 @@ type RcvInterface struct {
 	Update int64  `json:"update"`
 }
 
+// PostByte Post Byte Define
+// define the format of post interface,
+// now use 'Byte' to divide different post event
+type PostByte string
+
+const (
+	/*
+		This module include general message
+		@Tid:      post byte only id
+		@Kind:     post byte kind
+		@Version:  posy byte version
+		@DataTime: event happens time
+		@ReqTime:  request send byte time
+		@DevId:    device id
+		@UserId:   user id
+	*/
+	Tid      PostByte = "tid"
+	Kind     PostByte = "k"
+	Version  PostByte = "v"
+	DataTime PostByte = "dt"
+	ReqTime  PostByte = "rt"
+	DevId    PostByte = "did"
+	UserId   PostByte = "uid"
+
+	// Ip post update interface need ip
+	Ip PostByte = "ip"
+
+	// HwInfo post hardware info need info
+	HwInfo PostByte = "info"
+
+	// Order post user state, such as user-experience-enabled
+	Order PostByte = "oder"
+
+	/*
+		This module include un/install open/close app message
+		@AppPkgName: app package name
+		@AppId:      app id
+		@AppPkgSize: app package size
+		@AppVersion: app version
+		@AppOther:   app other info
+	*/
+	AppPkgName PostByte = "an"
+	AppId      PostByte = "ai"
+	AppPkgSize PostByte = "as"
+	AppVersion PostByte = "av"
+	AppOther   PostByte = "ao"
+
+	/*
+		@AppDlStartTime:   app download start time
+		@AppDlEndTime:     app download end time
+		@AppInsStartTime:  app install start time
+		@AppInsEndTime:    app install end time
+	*/
+	AppDlStartTime  PostByte = "dst"
+	AppDlEndTime    PostByte = "det"
+	AppInsStartTime PostByte = "ist"
+	AppInsEndTime   PostByte = "iet"
+)
+
+// TidTyp define unique post type id
+type TidTyp int
+
+const (
+	MotherBoardTid TidTyp = iota
+	ProcessorTid
+	DisplayCardTid
+	VideoCardTid
+	MachineBranchTid
+	MemoryTid
+	DiskTid
+	NetworkCardTid
+	WirelessCardTid
+	MouseTid
+	KeyboardTid
+	UosEdition
+	UosMajorTid
+	IpAddrTid
+	MacAddrTid
+	MachineIdTid
+
+	LoginTid
+	LogoutTid
+
+	UpgradeTid
+	DevelopModeTid
+	ExpPlanTid
+
+	InstallAppTid TidTyp = iota + 26
+	UninstallAppTid
+	OpenAppTid
+	CloseAppTid
+
+	UpdateNodeTid
+
+	ShutDownTid
+	RebootTid
+
+	UosMinorTid
+	UosBuild
+	UosProduct
+)
