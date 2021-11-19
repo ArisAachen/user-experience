@@ -42,6 +42,56 @@ func (lau *Launch) Init() {
 	lau.crypt = crypt.NewCryptor(nil)
 }
 
+// GetCollector get collector
+func (lau *Launch) GetCollector() abstract.BaseCollector {
+	// check if collector is init
+	if lau.collector == nil {
+		logger.Warning("cant get collector, collector is not init yet")
+		return nil
+	}
+	return lau.collector
+}
+
+// GetController get controller
+func (lau *Launch) GetController() abstract.BaseController {
+	// check if controller is init
+	if lau.controller == nil {
+		logger.Warning("cant get controller, controller is not init yet")
+		return nil
+	}
+	return lau.controller
+}
+
+// GetConfig get config
+func (lau *Launch) GetConfig() abstract.BaseConfig {
+	// check if config is init
+	if lau.config == nil {
+		logger.Warning("cant get controller, controller is not init yet")
+		return nil
+	}
+	return lau.config
+}
+
+// GetWriter get writer
+func (lau *Launch) GetWriter() abstract.BaseWriter {
+	// check if writer is init
+	if lau.writer == nil {
+		logger.Warning("cant get controller, controller is not init yet")
+		return nil
+	}
+	return lau.writer
+}
+
+// GetQueue get queue
+func (lau *Launch) GetQueue() abstract.BaseQueue {
+	// check if controller is init
+	if lau.queue == nil {
+		logger.Warning("cant get controller, controller is not init yet")
+		return nil
+	}
+	return lau.queue
+}
+
 // AddWriterItemModules add writer item to module
 // now only has two module: web sender and database writer
 func (lau *Launch) AddWriterItemModules() {

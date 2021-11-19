@@ -12,6 +12,7 @@ type BaseQueueHandler interface {
 	// Handler handle result
 	Handler(base BaseQueue, controller BaseController, result define.WriteResult)
 
+	// GetInterface indicate now push table or post url
 	GetInterface() string
 }
 

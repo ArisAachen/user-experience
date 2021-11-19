@@ -143,7 +143,9 @@ func (cy *Cryptor) Decode(msg define.CryptResult) (string, error) {
 	}
 	// use rsa to decode key
 	msg.Key, err = common.RSADecode(cy.privateKey, string(buf))
-
+	if err != nil {
+		return "", err
+	}
 	// use aes-cbc to decode data
 	// use base64 to decode data
 	buf, err = base64.StdEncoding.DecodeString(msg.Data)
@@ -158,5 +160,8 @@ func (cy *Cryptor) Decode(msg define.CryptResult) (string, error) {
 	}
 	// use pkcs to decode data
 	result, err = common.PKCSDecode(result)
+	if err != nil {
+		return "", err
+	}
 	return result, nil
 }

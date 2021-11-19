@@ -55,7 +55,9 @@ func (wr *Writer) Write(name define.WriterItemModule, crypt abstract.BaseCryptor
 	}
 	// handler write result, now only write web server failed case should be
 	// TODO
-	go handler.Handler(nil, controller, result)
+	if name == define.WebItemWriter {
+		go handler.Handler(nil, controller, result)
+	}
 }
 
 // Connect each module try to connect self target
