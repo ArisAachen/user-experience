@@ -1,6 +1,8 @@
 package define
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 // dbus object
 const (
@@ -32,6 +34,7 @@ const (
 
 type WriteResult struct {
 	ResultCode WriteResultCode
+	Origin     string
 	Msg        json.RawMessage
 }
 
@@ -195,4 +198,9 @@ const (
 	UosMinorTid
 	UosBuild
 	UosProduct
+)
+
+const (
+	Sqlite3Driver = "sqlite3"
+	SqlitePath    = BaseCfgFile + "/" + "exp.db"
 )

@@ -39,6 +39,21 @@ func newWebWriter() *webWriterItem {
 	return clt
 }
 
+// Connect connect to web
+func (web *webWriterItem) Connect(url string) error {
+	return nil
+}
+
+// Disconnect disconnect from web
+func (web *webWriterItem) Disconnect() {
+
+}
+
+// GetRemote get remote url path, maybe use for check web state later
+func (web *webWriterItem) GetRemote() string {
+	return ""
+}
+
 // Write write message to web
 func (web *webWriterItem) Write(crypt abstract.BaseCryptor, url string, msg string) define.WriteResult {
 	var result define.WriteResult

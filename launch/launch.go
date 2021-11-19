@@ -19,11 +19,12 @@ import (
 
 type Launch struct {
 	// save module handler
-	collector abstract.BaseCollector
-	config    abstract.BaseConfig
-	writer    abstract.BaseWriter
-	queue     abstract.BaseQueue
-	crypt     abstract.BaseCryptor
+	collector  abstract.BaseCollector
+	controller abstract.BaseController
+	config     abstract.BaseConfig
+	writer     abstract.BaseWriter
+	queue      abstract.BaseQueue
+	crypt      abstract.BaseCryptor
 }
 
 func NewLaunch() *Launch {
@@ -105,25 +106,31 @@ func (lau *Launch) AddCryptItemModules() {
 
 // StartService start service
 func (lau *Launch) StartService() {
-
+	// start writer first
+	lau.launchWriter()
+	// start queue
+	lau.launchQueue()
+	//	launch config
+	lau.launchConfig()
 }
 
 // launchWriter to make sure data can be sent and write,
 // writer module should be init at beginning
 func (lau *Launch) launchWriter() {
-	// TODO check database or post interface exist
+	lau.writer.Connect()
 }
 
 // launchQueue should be start
 // queue start second time after writer is started
 func (lau *Launch) launchQueue() {
+	// TODO can optimize here
 	// start pop data to webserver once data is push into queue
-	lau.queue.Pop(define.WebItemQueue, lau.crypt, lau.writer)
+	lau.queue.Pop(define.WebItemQueue, lau.controller, lau.crypt, lau.writer)
 	// start pop data to database once data is push into queue
-	lau.queue.Pop(define.DataBaseItemQueue, lau.crypt, lau.writer)
+	lau.queue.Pop(define.DataBaseItemQueue, lau.controller, lau.crypt, lau.writer)
 }
 
 // refreshConfig decide if need to update config message
-func (lau *Launch) refreshConfig() {
+func (lau *Launch) launchConfig() {
 
 }

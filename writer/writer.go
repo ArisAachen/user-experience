@@ -58,16 +58,13 @@ func (wr *Writer) Write(name define.WriterItemModule, crypt abstract.BaseCryptor
 	go handler.Handler(nil, controller, result)
 }
 
-// AddItem add ref item to item map
-func (wr *Writer) AddItem(module define.WriterItemModule) {
-	// check if module exist, add ref module
-	switch module {
-	case define.WebItemWriter:
-		wr.items[define.WebItemWriter] = newWebWriter()
-	case define.DataBaseItemWriter:
-
-	default:
-		logger.Warningf("add unknown writer item, module: %v", module)
+// Connect each module try to connect self target
+func (wr *Writer) Connect() {
+	for _, item := range wr.items {
+		err := item.Connect(item.GetRemote())
+		if err != nil {
+			logger.Warningf("connect to remote failed")
+		}
 	}
 }
 
@@ -77,7 +74,7 @@ func (wr *Writer) AddModule(module string) {
 	case define.WebItemWriter:
 		wr.items[define.WebItemWriter] = newWebWriter()
 	case define.DataBaseItemWriter:
-
+		wr.items[define.DataBaseItemWriter] = newDBWriter()
 	default:
 		logger.Warningf("add unknown writer item, module: %v", module)
 	}

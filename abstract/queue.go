@@ -9,9 +9,10 @@ import (
 // after msg is sent by writer, call handler to handler result
 // queue handler could be config, collector and database(not sure now)
 type BaseQueueHandler interface {
-	GetInterface() string
-	// SetInterface(ifc string)
+	// Handler handle result
 	Handler(base BaseQueue, controller BaseController, result define.WriteResult)
+
+	GetInterface() string
 }
 
 // BaseQueue use to push data to queue, pop queue to writer
