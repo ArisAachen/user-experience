@@ -3,18 +3,17 @@ package collect
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/golang/protobuf/proto"
-	networkmanager "github.com/linuxdeepin/go-dbus-factory/org.freedesktop.networkmanager"
 	"io/ioutil"
 	"os"
-	"pkg.deepin.io/lib/dbusutil"
 	"sync"
 	"time"
 
 	"github.com/ArisAachen/experience/abstract"
 	"github.com/ArisAachen/experience/define"
-	"github.com/ArisAachen/experience/launch"
 	"github.com/godbus/dbus"
+	"github.com/golang/protobuf/proto"
+	networkmanager "github.com/linuxdeepin/go-dbus-factory/org.freedesktop.networkmanager"
+	"pkg.deepin.io/lib/dbusutil"
 )
 
 type DBusModule struct {
@@ -27,11 +26,10 @@ type DBusModule struct {
 	sysBus  *dbus.Conn
 	sigLoop *dbusutil.SignalLoop
 
-	// lau save launch
-	lau *launch.Launch
-
 	// state net available state
 	state uint32
+
+	controller abstract.BaseController
 
 	// lock and save config
 	lock sync.Mutex
@@ -78,6 +76,10 @@ func (bus *DBusModule) Init() error {
 	}
 	logger.Debug("export dbus obj success")
 	return nil
+}
+
+func (bus *DBusModule) SetController(ctl abstract.BaseController) {
+	bus.controller = ctl
 }
 
 // Collect use to collect message
@@ -187,9 +189,9 @@ func (bus *DBusModule) Enable(enabled bool) *dbus.Error {
 	// when open user-exp, should release rule
 	// or when close user-exp, should invoke rule
 	if enabled {
-		bus.lau.GetController().Release(define.StrictRule)
+		bus.controller.Release(define.StrictRule)
 	} else {
-		bus.lau.GetController().Invoke(define.StrictRule)
+		bus.controller.Invoke(define.StrictRule)
 	}
 	// save user exp
 	bus.UserExp = enabled
@@ -258,7 +260,7 @@ func (bus *DBusModule) Wait(controller abstract.BaseController) {
 	// if user-exp state is not true, cant post data
 	if !bus.GetUserExp() {
 		// use strict rule to disable post
-		bus.lau.GetController().Invoke(define.StrictRule)
+		bus.controller.Invoke(define.StrictRule)
 	}
 	// create network manager use to block data
 	nm := networkmanager.NewManager(bus.sysBus)

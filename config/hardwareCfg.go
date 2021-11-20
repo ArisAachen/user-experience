@@ -91,7 +91,7 @@ func (hc *HardwareModule) Handler(base abstract.BaseQueue, controller abstract.B
 		return
 	}
 	// decrypt data
-	decry := crypt.NewCryptor(nil)
+	decry := crypt.NewCryptor()
 	data, err := decry.Decode(cryptData)
 	if err != nil {
 		logger.Warningf("decode post interface message failed, err: %v", err)

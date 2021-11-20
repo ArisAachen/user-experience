@@ -20,6 +20,9 @@ func NewWebQueue() *WebQueueItem {
 	// create web queue
 	wq := &WebQueueItem{
 		queue: queue{},
+		cond: sync.Cond{
+			L: new(sync.Mutex),
+		},
 	}
 	return wq
 }
@@ -44,7 +47,9 @@ func (web *WebQueueItem) Pop(crypt abstract.BaseCryptor, controller abstract.Bas
 	for {
 		// if queue if empty, wait until has at last one elem
 		if web.queue.empty() {
+			web.cond.L.Lock()
 			web.cond.Wait()
+			web.cond.L.Unlock()
 		}
 		// at these time queue is not empty, should call writer to send message
 		elem := web.queue.pop()

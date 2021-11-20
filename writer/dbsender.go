@@ -4,13 +4,14 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/ArisAachen/experience/common"
-	"github.com/ArisAachen/experience/queue"
 	"net/url"
 	"sync"
 
 	"github.com/ArisAachen/experience/abstract"
+	"github.com/ArisAachen/experience/common"
 	"github.com/ArisAachen/experience/define"
+	"github.com/ArisAachen/experience/queue"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 // database writer use to write data to database
@@ -38,7 +39,7 @@ func NewDBWriter() *DBSender {
 func (db *DBSender) Connect(dbPath string) {
 	handle, err := sql.Open("sqlite3", dbPath)
 	if err != nil {
-		logger.Warningf("open database %v failed, err: %v", err)
+		logger.Warningf("open database %v failed, err: %v", dbPath, err)
 		return
 	}
 	db.client = handle

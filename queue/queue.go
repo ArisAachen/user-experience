@@ -14,6 +14,7 @@ type Queue struct {
 // NewQueue create queue
 func NewQueue() *Queue {
 	que := &Queue{
+		make(map[define.QueueItemModule]abstract.BaseQueueItem),
 	}
 	return que
 }

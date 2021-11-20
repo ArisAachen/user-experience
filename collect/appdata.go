@@ -10,7 +10,6 @@ import (
 
 	"github.com/ArisAachen/experience/abstract"
 	"github.com/ArisAachen/experience/define"
-	"github.com/ArisAachen/experience/launch"
 	"github.com/godbus/dbus"
 	"github.com/linuxdeepin/go-dbus-factory/com.deepin.dde.daemon.dock"
 	"pkg.deepin.io/lib/dbusutil"
@@ -25,8 +24,6 @@ type appCollectorItem struct {
 	ddeDock dock.Dock
 	sesBus  *dbus.Conn
 	sigLoop *dbusutil.SignalLoop
-	// writer
-	lau *launch.Launch
 }
 
 // NewAppCollector create app collector

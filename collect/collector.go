@@ -10,7 +10,7 @@ type Collector struct {
 
 func NewCollector() *Collector {
 	col := &Collector{
-
+		items: make(map[string]abstract.BaseCollectorItem),
 	}
 	return col
 }

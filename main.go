@@ -1,4 +1,4 @@
-package launch
+package main
 
 import "github.com/ArisAachen/experience/launch"
 

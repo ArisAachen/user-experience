@@ -21,6 +21,9 @@ type Controller struct {
 func NewController() *Controller {
 	col := &Controller{
 		rule: define.NoneRule,
+		cond: sync.Cond{
+			L: new(sync.Mutex),
+		},
 	}
 	return col
 }
@@ -50,6 +53,8 @@ func (wb *Controller) Release(release define.Rule) {
 func (wb *Controller) Monitor(monitor define.Rule) {
 	// should wait
 	if monitor <= wb.rule {
+		wb.cond.L.Lock()
 		wb.cond.Wait()
+		wb.cond.L.Unlock()
 	}
 }

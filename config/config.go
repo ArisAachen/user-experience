@@ -15,6 +15,7 @@ type Config struct {
 func NewConfig() *Config {
 	// create obj
 	cfg := &Config{
+		items: make(map[string]abstract.FileLoader),
 	}
 	return cfg
 }

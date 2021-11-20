@@ -37,9 +37,10 @@ func GetDiskInfo() (define.BaseInfo, error) {
 func general(file define.SysModule) (define.BaseInfo, error) {
 	// init cpu info
 	var info define.BaseInfo
+	var factory parserFactory
 
 	// check if file is valid, and construct base parser
-	parser := parserFactory.createParser(parserFactory{}, file)
+	parser := factory.createParser(file)
 	if parser == nil {
 		return info, errors.New("file module is not exist")
 	}

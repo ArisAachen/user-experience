@@ -2,12 +2,12 @@ package writer
 
 import (
 	"encoding/json"
-	"github.com/ArisAachen/experience/abstract"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
 
+	"github.com/ArisAachen/experience/abstract"
 	"github.com/ArisAachen/experience/define"
 )
 

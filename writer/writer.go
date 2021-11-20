@@ -3,16 +3,12 @@ package writer
 import (
 	"github.com/ArisAachen/experience/abstract"
 	"github.com/ArisAachen/experience/define"
-	"github.com/ArisAachen/experience/launch"
 )
 
 // Writer include web sender and db writer
 type Writer struct {
 	// all writer is store here
 	items map[define.WriterItemModule]abstract.BaseWriterItem
-
-	// store launch here
-	launch *launch.Launch
 }
 
 // NewWriter create writer to manager all web sender and database writer
