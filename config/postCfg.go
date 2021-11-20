@@ -22,6 +22,11 @@ type postCfg struct {
 	define.PostInterface
 }
 
+// GetFileName get last store file name
+func (st *postCfg) GetFileName() string {
+	return define.PostCfgFile
+}
+
 // SaveToFile save protobuf config to file
 func (st *postCfg) SaveToFile(filename string) error {
 	// lock op
@@ -64,11 +69,6 @@ func (st *postCfg) LoadFromFile(filename string) error {
 		return err
 	}
 	return nil
-}
-
-// name indicate hardware module nameS
-func (st *postCfg) name() string {
-	return "SystemConfig"
 }
 
 // Handler post interface is a tmp request,
@@ -126,6 +126,7 @@ func (st *postCfg) Handler(base abstract.BaseQueue, controller abstract.BaseCont
 	}
 }
 
+// GetInterface not set
 func (st *postCfg) GetInterface() string {
 
 	return ""
@@ -133,7 +134,7 @@ func (st *postCfg) GetInterface() string {
 
 // Push for update interface, should push data to webserver,
 func (st *postCfg) Push(que abstract.BaseQueue) {
-
+	
 }
 
 // GetConfigPath post interface config path

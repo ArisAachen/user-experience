@@ -1,6 +1,10 @@
 package common
 
-import "github.com/ArisAachen/experience/define"
+import (
+	"github.com/ArisAachen/experience/define"
+	"os/exec"
+	"strings"
+)
 
 // QueryLevel query tid level
 // when collect data from database, should covert data to request level
@@ -28,4 +32,25 @@ func isTidExp(tid define.TidTyp) bool {
 		return true
 	}
 	return false
+}
+
+// UpdatePackage update package
+func UpdatePackage(pkg string) (string, error) {
+	// first of all run apt update
+	req := []string{"apt", "update"}
+	cmd := exec.Command("/bin/bash", "-c", strings.Join(req, " "))
+	// run apt update
+	buf, err := cmd.CombinedOutput()
+	if err != nil {
+		return "", err
+	}
+	// run apt install
+	req = []string{"apt", "install", pkg}
+	cmd = exec.Command("/bin/bash", "-c", strings.Join(req, " "))
+	// run apt install
+	buf, err = cmd.CombinedOutput()
+	if err != nil {
+		return "", err
+	}
+	return string(buf), nil
 }

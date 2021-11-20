@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/golang/protobuf/proto"
+	networkmanager "github.com/linuxdeepin/go-dbus-factory/org.freedesktop.networkmanager"
 	"io/ioutil"
 	"os"
+	"pkg.deepin.io/lib/dbusutil"
 	"sync"
 	"time"
 
@@ -20,10 +22,16 @@ type DBusCollector struct {
 	entry chan define.AppEntry
 	// login/out shutdown event
 	logon chan define.LogInfo
+
 	// sysBus is system bus to export dbus obj
-	sysBus *dbus.Conn
+	sysBus  *dbus.Conn
+	sigLoop *dbusutil.SignalLoop
+
 	// lau save launch
 	lau *launch.Launch
+
+	// state net available state
+	state uint32
 
 	// lock and save config
 	lock sync.Mutex
@@ -63,17 +71,13 @@ func (bus *DBusCollector) Init() error {
 		logger.Warningf("request name failed, err: %v", err)
 		return err
 	}
+	// create sig loop to monitor network-manager state
+	bus.sigLoop = dbusutil.NewSignalLoop(bus.sysBus, 10)
 	// load config file from path, it is ok, of file cant loaded
-	err = bus.LoadFromFile(bus.GetFileName())
+	err = bus.LoadFromFile(bus.GetConfigPath())
 	if err != nil {
 		logger.Warningf("cant load file from path: %v", err)
 	}
-	// if user-exp state is not true, cant post data
-	if !bus.GetUserExp() {
-		// use strict rule to disable post
-		bus.lau.GetController().Invoke(define.StrictRule)
-	}
-
 	logger.Debug("export dbus obj success")
 	return nil
 }
@@ -175,15 +179,18 @@ func (bus *DBusCollector) Enable(enabled bool) *dbus.Error {
 	if enabled == bus.GetUserExp() {
 		logger.Debugf("user exp state is now already %v", enabled)
 	}
-	// if user-exp was closed, and now open this file, should release rule
+	// when open user-exp, should release rule
+	// or when close user-exp, should invoke rule
 	if enabled {
 		bus.lau.GetController().Release(define.StrictRule)
+	} else {
+		bus.lau.GetController().Invoke(define.StrictRule)
 	}
 	// save user exp
 	bus.UserExp = enabled
 	// TODO
 	go func() {
-		err := bus.SaveToFile(bus.GetFileName())
+		err := bus.SaveToFile(bus.GetConfigPath())
 		if err != nil {
 			logger.Warningf("save user-exp state to file failed, err: %v", err)
 			return
@@ -217,8 +224,8 @@ func (bus *DBusCollector) SaveToFile(filename string) error {
 	return nil
 }
 
-// GetFileName get config file name
-func (bus *DBusCollector) GetFileName() string {
+// GetConfigPath get config file name
+func (bus *DBusCollector) GetConfigPath() string {
 	return define.SysCfgFile
 }
 
@@ -227,7 +234,6 @@ func (bus *DBusCollector) LoadFromFile(filename string) error {
 	// lock op
 	bus.lock.Lock()
 	defer bus.lock.Unlock()
-
 	// read file and unmarshal
 	buf, err := ioutil.ReadFile(filename)
 	if err != nil {
@@ -238,4 +244,58 @@ func (bus *DBusCollector) LoadFromFile(filename string) error {
 		return err
 	}
 	return nil
+}
+
+// available use to control web sender op
+// when user-exp is not up, or current web is unavailable
+// dont try to send data, so use strict rule to block send
+func (bus *DBusCollector) available() {
+	// if user-exp state is not true, cant post data
+	if !bus.GetUserExp() {
+		// use strict rule to disable post
+		bus.lau.GetController().Invoke(define.StrictRule)
+	}
+	// create network manager use to block data
+	nm := networkmanager.NewManager(bus.sysBus)
+	nm.InitSignalExt(bus.sigLoop, true)
+	bus.sigLoop.Start()
+	// monitor connectivity state
+	err := nm.Connectivity().ConnectChanged(func(hasValue bool, value uint32) {
+		// check if has value
+		if !hasValue {
+			logger.Warning("connectivity has no value")
+			return
+		}
+		// save state and decide rule
+		bus.save(value)
+	})
+	// check if can monitor, if cant also ok
+	if err != nil {
+		logger.Warningf("monitor connectivity state failed, err: %v", err)
+	}
+	// get first connectivity to start rule
+	state, err := nm.Connectivity().Get(0)
+	if err != nil {
+		logger.Warningf("get connectivity failed, err: %v", err)
+		return
+	}
+	// when first time is not 4, block sent
+	if state != 4 {
+		bus.save(state)
+	}
+}
+
+func (bus *DBusCollector) save(state uint32) {
+	// check if state is the same
+	if bus.state == state {
+		return
+	}
+	// save current state
+	bus.state = state
+	// check state, 4 means network ok
+	if state == 4 {
+		bus.lau.GetController().Release(define.StrictRule)
+	} else {
+		bus.lau.GetController().Invoke(define.StrictRule)
+	}
 }

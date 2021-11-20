@@ -164,6 +164,10 @@ func (lau *Launch) StartService() {
 	lau.launchConfig()
 }
 
+func (lau *Launch) StopService() {
+
+}
+
 // launchWriter to make sure data can be sent and write,
 // writer module should be init at beginning
 func (lau *Launch) launchWriter() {

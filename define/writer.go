@@ -10,9 +10,9 @@ const (
 	SysCfgFile  = BaseCfgFile + "/" + "system"
 	PostCfgFile = BaseCfgFile + "/" + "post"
 	SqlitePath  = BaseCfgFile + "/" + "exp.db"
+
+	PkgName = "deepin-user-experience-daemon"
 )
-
-
 
 // WriteResultCode code indicate diff write result
 type WriteResultCode int
@@ -29,6 +29,12 @@ const (
 
 	WriteResultUnknown
 )
+
+// WriteOrigin origin data, use to decode
+type WriteOrigin struct {
+	Tid TidTyp
+	Msg json.RawMessage
+}
 
 type WriteResult struct {
 	ResultCode WriteResultCode
@@ -209,6 +215,13 @@ const (
 	UosMinorTid
 	UosBuild
 	UosProduct
+
+	NewSystemInfoTid TidTyp = 1000 + iota
+	NewCheckUpdateTid
+	NewLoginTid
+	NewLogoutTid
+	NewAppOpenTid
+	NewAppCloseTid
 )
 
 const (
