@@ -4,17 +4,15 @@ import (
 	"encoding/json"
 )
 
-// dbus object
-const (
-	ServiceName   = "com.deepin.UserExperience.Daemon"
-	ServicePath   = "/com/deepin/UserExperience/Daemon"
-	DbusInterface = ServiceName
-)
-
 const (
 	BaseCfgFile = "/var/lib/deepin-user-experience"
-	HwCfgFile   = BaseCfgFile + "hardware"
+	HwCfgFile   = BaseCfgFile + "/" + "hardware"
+	SysCfgFile  = BaseCfgFile + "/" + "system"
+	PostCfgFile = BaseCfgFile + "/" + "post"
+	SqlitePath  = BaseCfgFile + "/" + "exp.db"
 )
+
+
 
 // WriteResultCode code indicate diff write result
 type WriteResultCode int
@@ -97,6 +95,19 @@ type RcvInterface struct {
 	Ip     string `json:"ip"`
 	Update int64  `json:"update"`
 }
+
+// RcvUni receive uni id and
+type RcvUni struct {
+}
+
+// LogEvent login shutdown
+type LogEvent string
+
+const (
+	LoginEvent    LogEvent = "login"
+	LogOutEvent   LogEvent = "logout"
+	ShutDownEvent LogEvent = "shutdown"
+)
 
 // PostByte Post Byte Define
 // define the format of post interface,
@@ -202,5 +213,4 @@ const (
 
 const (
 	Sqlite3Driver = "sqlite3"
-	SqlitePath    = BaseCfgFile + "/" + "exp.db"
 )

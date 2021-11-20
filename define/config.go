@@ -113,5 +113,5 @@ const (
 
 const (
 	ConfigDir         = "/var/lib/deepin-user-experience"
-	PostInterfacePath = ConfigDir + "PostConfig"
+	PostInterfacePath = ConfigDir + "/" + "PostConfig"
 )

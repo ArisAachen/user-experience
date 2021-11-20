@@ -2,6 +2,7 @@ package config
 
 import (
 	"bytes"
+	"encoding/json"
 	"io/ioutil"
 	"os"
 	"sync"
@@ -79,14 +80,20 @@ func (hc *hardwareCfg) name() string {
 // Handler use to handle write result
 func (hc *hardwareCfg) Handler(base abstract.BaseQueue, controller abstract.BaseController, result define.WriteResult) {
 	// hardware update uni id is strict rule
-	controller.Release(define.StrictRule)
+	defer controller.Release(define.StrictRule)
 
 	// for hardware config, write data to web sender failed,
 	// should write data to database
-	var msg define.RequestMsg
+	// should marshal encrypt msg here
+	var cryptData define.CryptResult
+	err := json.Unmarshal(result.Msg, &cryptData)
+	if err != nil {
+		logger.Warningf("unmarshal encrypted post interface failed, err: %v", err)
+		return
+	}
 
-	// TODO release rule here
-	base.Push("", nil, msg)
+
+
 }
 
 func (hc *hardwareCfg) GetInterface() string {

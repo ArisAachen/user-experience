@@ -75,7 +75,7 @@ func (st *postCfg) name() string {
 // so these request will not save to database even sent failed
 func (st *postCfg) Handler(base abstract.BaseQueue, controller abstract.BaseController, result define.WriteResult) {
 	// update interface is strict rule
-	controller.Release(define.StrictRule)
+	defer controller.Release(define.StrictRule)
 
 	// actually when post update interface not success, dont store it in database
 	if result.ResultCode != define.WriteResultSuccess {

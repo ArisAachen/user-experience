@@ -1,11 +1,16 @@
 package collect
 
 import (
+	"encoding/json"
+	"os/exec"
 	"path/filepath"
+	"strings"
 	"sync"
+	"time"
 
+	"github.com/ArisAachen/experience/abstract"
 	"github.com/ArisAachen/experience/define"
-	"github.com/ArisAachen/experience/queue"
+	"github.com/ArisAachen/experience/launch"
 	"github.com/godbus/dbus"
 	"github.com/linuxdeepin/go-dbus-factory/com.deepin.dde.daemon.dock"
 	"pkg.deepin.io/lib/dbusutil"
@@ -20,11 +25,14 @@ type appCollectorItem struct {
 	ddeDock dock.Dock
 	sesBus  *dbus.Conn
 	sigLoop *dbusutil.SignalLoop
+	// writer
+	lau *launch.Launch
 }
 
 // create app collector
-func newAppCollector() *appCollectorItem {
+func newAppCollector(lau *launch.Launch) *appCollectorItem {
 	collector := &appCollectorItem{
+		lau:   lau,
 		items: make(map[string]define.AppEntry),
 	}
 	return collector
@@ -51,13 +59,13 @@ func (app *appCollectorItem) Init() error {
 }
 
 // Collect use to collect message
-func (app *appCollectorItem) Collect(que queue.Queue) error {
+func (app *appCollectorItem) Collect(que abstract.BaseQueue) error {
 	// use to monitor items added
 	// sometimes user send some quick-start app to dock
 	// will also monitor this message
 	// so should also monitor each entry's active state
 	_, err := app.ddeDock.ConnectEntryAdded(func(path dbus.ObjectPath, index int32) {
-		go app.monitor(path)
+		go app.monitor(que, path)
 	})
 	// use to monitor items close,
 	// sometimes some app is closed by command,
@@ -65,7 +73,7 @@ func (app *appCollectorItem) Collect(que queue.Queue) error {
 	_, err = app.ddeDock.ConnectEntryRemoved(func(entryId string) {
 		// TODO: if app entry is removed, need stop goroutine to save memory, use context
 		entry := app.getEntry(entryId)
-		if entry.Id == "" {
+		if entry.AppName == "" {
 			return
 		}
 		// try to remove entry
@@ -73,7 +81,7 @@ func (app *appCollectorItem) Collect(que queue.Queue) error {
 			return
 		}
 		// post close data
-		app.post(entry, false)
+		app.post(que, entry, false)
 	})
 	// get all entries
 	entries, err := app.ddeDock.Entries().Get(0)
@@ -82,13 +90,24 @@ func (app *appCollectorItem) Collect(que queue.Queue) error {
 	}
 	// monitor all entry
 	for _, entry := range entries {
-		go app.monitor(entry)
+		go app.monitor(que, entry)
 	}
 	return nil
 }
 
+// Handler handle write to database result
+// at this time, just drop data if failed
+func (app *appCollectorItem) Handler(base abstract.BaseQueue, controller abstract.BaseController, result define.WriteResult) {
+	return
+}
+
+// GetInterface write database table
+func (app *appCollectorItem) GetInterface() string {
+	return "v2/report/unification"
+}
+
 // monitor use to monitor app entry state
-func (app *appCollectorItem) monitor(entryPath dbus.ObjectPath) {
+func (app *appCollectorItem) monitor(que abstract.BaseQueue, entryPath dbus.ObjectPath) {
 	// create entry item
 	entryObj, err := dock.NewEntry(app.sesBus, entryPath)
 	// it is ok, of just cant get such entry
@@ -103,11 +122,27 @@ func (app *appCollectorItem) monitor(entryPath dbus.ObjectPath) {
 		logger.Warningf("get desktop file failed, err: %v", err)
 		return
 	}
+	// get app name from entry obj
+	name, err := entryObj.Name().Get(0)
+	if err != nil {
+		logger.Warningf("get app name failed, err: %v", err)
+	}
+	// run dpkg to get package name
+	dpkg := []string{"dpkg", "-S", desktop}
+	cmd := exec.Command("/bin/bash", "-c", strings.Join(dpkg, " "))
+	buf, err := cmd.CombinedOutput()
+	if err != nil {
+		logger.Warningf("get package name failed, err: %v", err)
+	}
+	pkg := strings.Trim(string(buf), "\n")
 	// get id from dbus path,
 	//such as /com/deepin/dde/daemon/Dock/entries/e0T61978f3b
 	entryId := filepath.Base(string(entryPath))
 	// TODO: should get entry desktop here
-	var entry define.AppEntry
+	entry := define.AppEntry{
+		PkgName: pkg,
+		AppName: name,
+	}
 	// monitor entry active state change
 	err = entryObj.IsActive().ConnectChanged(func(hasValue bool, value bool) {
 		// check if value is valid
@@ -135,7 +170,7 @@ func (app *appCollectorItem) monitor(entryPath dbus.ObjectPath) {
 			open = false
 		}
 		// post app open/close data
-		app.post(entry, open)
+		app.post(que, entry, open)
 	})
 	if err != nil {
 		return
@@ -151,11 +186,27 @@ func (app *appCollectorItem) monitor(entryPath dbus.ObjectPath) {
 		return
 	}
 	// post open app data
-	app.post(entry, true)
+	app.post(que, entry, true)
 }
 
-func (app *appCollectorItem) post(desktop define.AppEntry, open bool) {
-
+// post write data to database
+func (app *appCollectorItem) post(que abstract.BaseQueue, desktop define.AppEntry, open bool) {
+	// store time
+	desktop.Time = time.Now().UnixNano()
+	// marshal app info
+	data, err := json.Marshal(&desktop)
+	if err != nil {
+		logger.Warningf("marshal app data failed, err: %v")
+		return
+	}
+	// request message
+	req := define.RequestMsg{
+		Pri:  define.SimpleRequest,
+		Rule: define.LooseRule,
+		Msg:  string(data),
+	}
+	// push data to queue
+	que.Push(define.DataBaseItemQueue, app, req)
 }
 
 // getEntry get entry message from map
