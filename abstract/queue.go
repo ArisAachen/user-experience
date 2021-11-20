@@ -11,9 +11,6 @@ import (
 type BaseQueueHandler interface {
 	// Handler handle result
 	Handler(base BaseQueue, controller BaseController, result define.WriteResult)
-
-	// GetInterface indicate now push table or post url
-	GetInterface() string
 }
 
 // BaseQueue use to push data to queue, pop queue to writer
@@ -21,11 +18,12 @@ type BaseQueueHandler interface {
 type BaseQueue interface {
 	Push(module define.QueueItemModule, base BaseQueueHandler, msg define.RequestMsg)
 	Pop(module define.QueueItemModule, controller BaseController, crypt BaseCryptor, sender BaseWriter)
-	Module
+	AddModule(name define.QueueItemModule, item BaseQueueItem)
 }
 
 // BaseQueueItem include may items, each item write data to diff place
 type BaseQueueItem interface {
 	Push(base BaseQueueHandler, msg define.RequestMsg)
-	Pop(crypt BaseCryptor, controller BaseController, writer BaseWriter)
+	Pop(crypt BaseCryptor, controller BaseController, creator BaseUrlCreator, writer BaseWriter)
+	GetQueueName() define.QueueItemModule
 }

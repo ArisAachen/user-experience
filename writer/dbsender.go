@@ -22,36 +22,36 @@ import (
 	@nano: data happens time, use to delete old data, if database size if out of range
 */
 
-type dbSender struct {
+type DBSender struct {
 	client *sql.DB
 
 	lock sync.Mutex
 }
 
-func newDBWriter() *dbSender {
-	db := &dbSender{
+func NewDBWriter() *DBSender {
+	db := &DBSender{
 	}
 	return db
 }
 
 // Connect connect to database
-func (db *dbSender) Connect(dbPath string) error {
+func (db *DBSender) Connect(dbPath string) {
 	handle, err := sql.Open("sqlite3", dbPath)
 	if err != nil {
 		logger.Warningf("open database %v failed, err: %v", err)
-		return err
+		return
 	}
 	db.client = handle
-	return nil
+	return
 }
 
 // GetRemote get local database path
-func (db *dbSender) GetRemote() string {
+func (db *DBSender) GetRemote() string {
 	return define.SqlitePath
 }
 
 // Disconnect disconnect from database
-func (db *dbSender) Disconnect() error {
+func (db *DBSender) Disconnect() error {
 	// check if client exist
 	if db.client == nil {
 		return errors.New("database is not init")
@@ -65,7 +65,7 @@ func (db *dbSender) Disconnect() error {
 }
 
 // Write write data to ref table
-func (db *dbSender) Write(crypt abstract.BaseCryptor, table string, msg string) define.WriteResult {
+func (db *DBSender) Write(crypt abstract.BaseCryptor, table string, msg string) define.WriteResult {
 	// write database result
 	var result define.WriteResult
 	value, err := url.ParseQuery(msg)
@@ -114,7 +114,7 @@ func (db *dbSender) Write(crypt abstract.BaseCryptor, table string, msg string) 
 }
 
 // Push database push data into queue
-func (db *dbSender) Push(que queue.Queue) {
+func (db *DBSender) Push(que queue.Queue) {
 	if db.client == nil {
 		logger.Warning("database is not opened yet")
 		return
@@ -150,12 +150,12 @@ func (db *dbSender) Push(que queue.Queue) {
 	}
 }
 
-func (db *dbSender) GetInterface() string {
+func (db *DBSender) GetInterface() string {
 	return ""
 }
 
 // Handler handle sent data result
-func (db *dbSender) Handler(base abstract.BaseQueue, controller abstract.BaseController, result define.WriteResult) {
+func (db *DBSender) Handler(base abstract.BaseQueue, controller abstract.BaseController, result define.WriteResult) {
 	// check if database is opened
 	if db.client == nil {
 		logger.Warning("database is not opened yet")
@@ -177,7 +177,7 @@ func (db *dbSender) Handler(base abstract.BaseQueue, controller abstract.BaseCon
 }
 
 // createTable create table if table not exist
-func (db *dbSender) createTable(table string) error {
+func (db *DBSender) createTable(table string) error {
 	// check if database is init
 	if db.client == nil {
 		return errors.New("database is not opened yet")

@@ -4,12 +4,17 @@ import (
 	"encoding/json"
 )
 
+// File path
 const (
-	BaseCfgFile = "/var/lib/deepin-user-experience"
-	HwCfgFile   = BaseCfgFile + "/" + "hardware"
-	SysCfgFile  = BaseCfgFile + "/" + "system"
-	PostCfgFile = BaseCfgFile + "/" + "post"
-	SqlitePath  = BaseCfgFile + "/" + "exp.db"
+	BaseCfgDir  = "/var/lib/deepin-user-experience"
+	HwCfgFile   = BaseCfgDir + "/" + "hardware"
+	SysCfgFile  = BaseCfgDir + "/" + "system"
+	PostCfgFile = BaseCfgDir + "/" + "post"
+	SqlitePath  = BaseCfgDir + "/" + "exp.db"
+
+	BaseEtcDir  = "/etc"
+	MachineFile = BaseEtcDir + "/" + "machine-id"
+	SysTypFile  = BaseEtcDir + "/" + "os-version"
 
 	PkgName = "deepin-user-experience-daemon"
 )
@@ -29,6 +34,15 @@ const (
 
 	WriteResultUnknown
 )
+
+// WriteUpdateReq write update request
+type WriteUpdateReq struct {
+	Tid     TidTyp
+	Machine string
+	Type    string
+	Version string
+	Uni     string
+}
 
 // WriteOrigin origin data, use to decode
 type WriteOrigin struct {

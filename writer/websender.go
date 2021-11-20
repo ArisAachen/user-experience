@@ -22,16 +22,16 @@ const (
 	postSuccess = 200
 )
 
-// webWriterItem use to send data to server, call handler callback to handle result.
+// WebWriterItem use to send data to server, call handler callback to handle result.
 // When post data failed, retry 3 times, if none success, drop data.
 // System data should send immediately, so these data dont need save to database, only if data send failed
-type webWriterItem struct {
+type WebWriterItem struct {
 	client http.Client
 }
 
 // NewWebWriter create one web writer
-func newWebWriter() *webWriterItem {
-	clt := &webWriterItem{
+func NewWebWriter() *WebWriterItem {
+	clt := &WebWriterItem{
 		client: http.Client{
 			Timeout: 500 * time.Millisecond,
 		},
@@ -40,22 +40,22 @@ func newWebWriter() *webWriterItem {
 }
 
 // Connect connect to web
-func (web *webWriterItem) Connect(url string) error {
-	return nil
+func (web *WebWriterItem) Connect(url string) {
+	return
 }
 
 // Disconnect disconnect from web
-func (web *webWriterItem) Disconnect() {
+func (web *WebWriterItem) Disconnect() {
 
 }
 
 // GetRemote get remote url path, maybe use for check web state later
-func (web *webWriterItem) GetRemote() string {
+func (web *WebWriterItem) GetRemote() string {
 	return ""
 }
 
 // Write write message to web
-func (web *webWriterItem) Write(crypt abstract.BaseCryptor, url string, msg string) define.WriteResult {
+func (web *WebWriterItem) Write(crypt abstract.BaseCryptor, url string, msg string) define.WriteResult {
 	var result define.WriteResult
 	// use Cryptor to crypt data
 	cryResult, err := crypt.Encode(msg)

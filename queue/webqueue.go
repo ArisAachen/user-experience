@@ -5,7 +5,6 @@ import (
 
 	"github.com/ArisAachen/experience/abstract"
 	"github.com/ArisAachen/experience/define"
-	"github.com/ArisAachen/experience/launch"
 )
 
 // WebQueueItem collect messages from
@@ -14,13 +13,10 @@ type WebQueueItem struct {
 	queue queue
 	// cond is signal if current queue is empty
 	cond sync.Cond
-
-	// save launcher
-	launcher *launch.Launch
 }
 
-// create web queue
-func newWebQueue() *WebQueueItem {
+// NewWebQueue create web queue
+func NewWebQueue() *WebQueueItem {
 	// create web queue
 	wq := &WebQueueItem{
 		queue: queue{},
@@ -38,7 +34,7 @@ func (web *WebQueueItem) Push(handler abstract.BaseQueueHandler, msg define.Requ
 }
 
 // Pop pop data to writer
-func (web *WebQueueItem) Pop(crypt abstract.BaseCryptor, controller abstract.BaseController, writer abstract.BaseWriter) {
+func (web *WebQueueItem) Pop(crypt abstract.BaseCryptor, controller abstract.BaseController, creator abstract.BaseUrlCreator, writer abstract.BaseWriter) {
 	// check if writer is valid
 	if writer == nil {
 		logger.Warning("writer failed, writer is nil")
@@ -61,6 +57,11 @@ func (web *WebQueueItem) Pop(crypt abstract.BaseCryptor, controller abstract.Bas
 		// set current rule
 		controller.Invoke(elem.msg.Rule)
 		// write msg to writer
-		writer.Write(define.WebItemWriter, crypt, controller, elem.handler, elem.msg.Msg)
+		writer.Write(define.WebItemWriter, crypt, controller, elem.handler, creator, elem.msg.Msg)
 	}
+}
+
+// GetQueueName get queue name
+func (web *WebQueueItem) GetQueueName() define.QueueItemModule {
+	return define.WebItemQueue
 }

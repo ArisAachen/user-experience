@@ -12,7 +12,6 @@ import (
 
 	"github.com/ArisAachen/experience/common"
 	"github.com/ArisAachen/experience/define"
-	"github.com/ArisAachen/experience/launch"
 	"github.com/golang/protobuf/proto"
 )
 
@@ -21,15 +20,12 @@ type Cryptor struct {
 	publicKey  *rsa.PublicKey
 	privateKey *rsa.PrivateKey
 
-	// launch is not used now, but just store this, so that all module has some create func
-	launch *launch.Launch
-	lock   sync.Mutex
+	lock sync.Mutex
 }
 
 // NewCryptor create crypto obj
-func NewCryptor(launch *launch.Launch) *Cryptor {
+func NewCryptor() *Cryptor {
 	cy := &Cryptor{
-		launch: launch,
 	}
 	return cy
 }

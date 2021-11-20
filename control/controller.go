@@ -17,6 +17,14 @@ type Controller struct {
 	cond sync.Cond
 }
 
+// NewController create controller
+func NewController() *Controller {
+	col := &Controller{
+		rule: define.NoneRule,
+	}
+	return col
+}
+
 // Invoke just set rule state, rule will block until monitor level check
 func (wb *Controller) Invoke(invoke define.Rule) {
 	// check if coming rule is more strictly

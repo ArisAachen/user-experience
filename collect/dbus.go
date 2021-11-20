@@ -17,7 +17,7 @@ import (
 	"github.com/godbus/dbus"
 )
 
-type DBusCollector struct {
+type DBusModule struct {
 	// entry is a chan for post message
 	entry chan define.AppEntry
 	// login/out shutdown event
@@ -38,20 +38,18 @@ type DBusCollector struct {
 	define.SysCfg
 }
 
-// newDBusCollector create dbus collector
-func newDBusCollector(lau *launch.Launch) *DBusCollector {
-	bus := &DBusCollector{
+// NewDBusModule create dbus module
+func NewDBusModule() *DBusModule {
+	bus := &DBusModule{
 		// make app chan
 		entry: make(chan define.AppEntry),
 		logon: make(chan define.LogInfo),
-		// launch
-		lau: lau,
 	}
 	return bus
 }
 
 // Init init dbus property
-func (bus *DBusCollector) Init() error {
+func (bus *DBusModule) Init() error {
 	// create system bus
 	var err error
 	bus.sysBus, err = dbus.SystemBus()
@@ -83,7 +81,7 @@ func (bus *DBusCollector) Init() error {
 }
 
 // Collect use to collect message
-func (bus *DBusCollector) Collect(que abstract.BaseQueue) error {
+func (bus *DBusModule) Collect(que abstract.BaseQueue) {
 	// use collect to wait open/close message
 	for {
 		var req define.RequestMsg
@@ -110,31 +108,38 @@ func (bus *DBusCollector) Collect(que abstract.BaseQueue) error {
 			req.Msg = string(data)
 			req.Pri = define.LogInOutRequest
 			req.Rule = define.LooseRule
+		default:
+			logger.Warning("collect unknown request")
+			return
 		}
 		// push data to queue
 		go que.Push(define.DataBaseItemQueue, bus, req)
 	}
 }
 
+func (bus *DBusModule) GetCollectName() string {
+	return "dbus"
+}
+
 // Handler handle write to database result
 // at this time, just drop data if failed
-func (bus *DBusCollector) Handler(base abstract.BaseQueue, controller abstract.BaseController, result define.WriteResult) {
+func (bus *DBusModule) Handler(base abstract.BaseQueue, controller abstract.BaseController, result define.WriteResult) {
 	return
 }
 
 // GetInterface write database table
-func (bus *DBusCollector) GetInterface() string {
+func (bus *DBusModule) GetInterface() string {
 	return "v2/report/unification"
 }
 
 // SendAppStateData use to collect open/close app message,
 // this method has deprecated, use dde.dock to collect use message
-func (bus *DBusCollector) SendAppStateData(msg string, path string, name string, id string) {
+func (bus *DBusModule) SendAppStateData(msg string, path string, name string, id string) {
 	return
 }
 
 // SendAppInstallData collect app un/install app message
-func (bus *DBusCollector) SendAppInstallData(msg string, path string, name string, id string) {
+func (bus *DBusModule) SendAppInstallData(msg string, path string, name string, id string) {
 	// create now open/close app
 	entry := define.AppEntry{
 		Time:    time.Now().UnixNano(),
@@ -148,7 +153,7 @@ func (bus *DBusCollector) SendAppInstallData(msg string, path string, name strin
 }
 
 // SendLogonData collect logon data
-func (bus *DBusCollector) SendLogonData(msg string) {
+func (bus *DBusModule) SendLogonData(msg string) {
 	// save time
 	var log define.LogInfo
 	log.Time = time.Now().UnixNano()
@@ -169,12 +174,12 @@ func (bus *DBusCollector) SendLogonData(msg string) {
 }
 
 // IsEnabled check now collector state
-func (bus *DBusCollector) IsEnabled() bool {
+func (bus *DBusModule) IsEnabled() bool {
 	return bus.GetUserExp()
 }
 
 // Enable enable user-exp state
-func (bus *DBusCollector) Enable(enabled bool) *dbus.Error {
+func (bus *DBusModule) Enable(enabled bool) *dbus.Error {
 	// check if now state is the same
 	if enabled == bus.GetUserExp() {
 		logger.Debugf("user exp state is now already %v", enabled)
@@ -200,7 +205,7 @@ func (bus *DBusCollector) Enable(enabled bool) *dbus.Error {
 }
 
 // SaveToFile save protobuf config to file
-func (bus *DBusCollector) SaveToFile(filename string) error {
+func (bus *DBusModule) SaveToFile(filename string) error {
 	// lock op
 	bus.lock.Lock()
 	defer bus.lock.Unlock()
@@ -225,12 +230,12 @@ func (bus *DBusCollector) SaveToFile(filename string) error {
 }
 
 // GetConfigPath get config file name
-func (bus *DBusCollector) GetConfigPath() string {
+func (bus *DBusModule) GetConfigPath() string {
 	return define.SysCfgFile
 }
 
 // LoadFromFile load protobuf config from file
-func (bus *DBusCollector) LoadFromFile(filename string) error {
+func (bus *DBusModule) LoadFromFile(filename string) error {
 	// lock op
 	bus.lock.Lock()
 	defer bus.lock.Unlock()
@@ -246,10 +251,10 @@ func (bus *DBusCollector) LoadFromFile(filename string) error {
 	return nil
 }
 
-// available use to control web sender op
+// Wait use to control web sender op
 // when user-exp is not up, or current web is unavailable
 // dont try to send data, so use strict rule to block send
-func (bus *DBusCollector) available() {
+func (bus *DBusModule) Wait(controller abstract.BaseController) {
 	// if user-exp state is not true, cant post data
 	if !bus.GetUserExp() {
 		// use strict rule to disable post
@@ -267,7 +272,7 @@ func (bus *DBusCollector) available() {
 			return
 		}
 		// save state and decide rule
-		bus.save(value)
+		bus.save(value, controller)
 	})
 	// check if can monitor, if cant also ok
 	if err != nil {
@@ -281,11 +286,12 @@ func (bus *DBusCollector) available() {
 	}
 	// when first time is not 4, block sent
 	if state != 4 {
-		bus.save(state)
+		bus.save(state, controller)
 	}
 }
 
-func (bus *DBusCollector) save(state uint32) {
+// save save current state, and control rule
+func (bus *DBusModule) save(state uint32, controller abstract.BaseController) {
 	// check if state is the same
 	if bus.state == state {
 		return
@@ -294,8 +300,8 @@ func (bus *DBusCollector) save(state uint32) {
 	bus.state = state
 	// check state, 4 means network ok
 	if state == 4 {
-		bus.lau.GetController().Release(define.StrictRule)
+		controller.Release(define.StrictRule)
 	} else {
-		bus.lau.GetController().Invoke(define.StrictRule)
+		controller.Invoke(define.StrictRule)
 	}
 }

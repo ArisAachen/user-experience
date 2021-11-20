@@ -50,6 +50,7 @@ message PostInterface {
     string update = 7;
     string update_domain = 8;
     string update_path = 9;
+    string general = 10;
 }
 
 // save system ref config, apt time, user-exp-enabled, develop-mode

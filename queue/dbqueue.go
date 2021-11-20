@@ -19,8 +19,8 @@ type DbQueueItem struct {
 	launcher *launch.Launch
 }
 
-// create database queue
-func newDbQueue() *DbQueueItem {
+// NewDbQueue create database queue
+func NewDbQueue() *DbQueueItem {
 	// create web queue
 	wq := &DbQueueItem{
 		queue: queue{},
@@ -38,7 +38,7 @@ func (db *DbQueueItem) Push(handler abstract.BaseQueueHandler, msg define.Reques
 }
 
 // Pop pop data to writer
-func (db *DbQueueItem) Pop(crypt abstract.BaseCryptor, controller abstract.BaseController, writer abstract.BaseWriter) {
+func (db *DbQueueItem) Pop(crypt abstract.BaseCryptor, controller abstract.BaseController, creator abstract.BaseUrlCreator, writer abstract.BaseWriter) {
 	// check if writer is valid
 	if writer == nil {
 		logger.Warning("writer failed, writer is nil")
@@ -59,4 +59,9 @@ func (db *DbQueueItem) Pop(crypt abstract.BaseCryptor, controller abstract.BaseC
 		// write data to database writer
 		writer.Write(define.DataBaseItemWriter, crypt, controller, nil, elem.msg.Msg)
 	}
+}
+
+// GetQueueName get queue name
+func (db *DbQueueItem) GetQueueName() define.QueueItemModule {
+	return define.DataBaseItemQueue
 }

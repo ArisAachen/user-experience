@@ -3,20 +3,17 @@ package queue
 import (
 	"github.com/ArisAachen/experience/abstract"
 	"github.com/ArisAachen/experience/define"
-	"github.com/ArisAachen/experience/launch"
 )
 
 // Queue contains database queue and webserver queue
 // caller use name to decide which queue to push
 type Queue struct {
-	launch *launch.Launch
-	items  map[define.QueueItemModule]abstract.BaseQueueItem
+	items map[define.QueueItemModule]abstract.BaseQueueItem
 }
 
 // NewQueue create queue
-func NewQueue(launch *launch.Launch) *Queue {
+func NewQueue() *Queue {
 	que := &Queue{
-		launch: launch,
 	}
 	return que
 }
@@ -41,18 +38,13 @@ func (que *Queue) Pop(module define.QueueItemModule, controller abstract.BaseCon
 		return
 	}
 	// push data
-	item.Pop(crypt, controller, sender)
+	item.Pop(crypt, controller, nil, sender)
 }
 
-// AddModule add queue module item into queue
-func (que *Queue) AddModule(module string) {
-	// check if module exist, add ref module
-	switch define.QueueItemModule(module) {
-	case define.WebItemQueue:
-		que.items[define.WebItemQueue] = newWebQueue()
-	case define.DataBaseItemQueue:
-
-	default:
-		logger.Warningf("add unknown queue item, module: %v", module)
+// AddModule module
+func (que *Queue) AddModule(name define.QueueItemModule, item abstract.BaseQueueItem) {
+	if _, ok := que.items[name]; ok {
+		return
 	}
+	que.items[name] = item
 }

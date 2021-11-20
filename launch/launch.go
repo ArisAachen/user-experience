@@ -2,9 +2,10 @@ package launch
 
 import (
 	"github.com/ArisAachen/experience/abstract"
+	"github.com/ArisAachen/experience/collect"
 	"github.com/ArisAachen/experience/config"
+	"github.com/ArisAachen/experience/control"
 	"github.com/ArisAachen/experience/crypt"
-	"github.com/ArisAachen/experience/define"
 	"github.com/ArisAachen/experience/queue"
 	"github.com/ArisAachen/experience/writer"
 )
@@ -25,6 +26,7 @@ type Launch struct {
 	writer     abstract.BaseWriter
 	queue      abstract.BaseQueue
 	crypt      abstract.BaseCryptor
+	creator    abstract.BaseUrlCreator
 }
 
 func NewLaunch() *Launch {
@@ -36,10 +38,94 @@ func NewLaunch() *Launch {
 // Init ref module
 func (lau *Launch) Init() {
 	// TODO
-	lau.writer = writer.NewWriter(nil)
-	lau.queue = queue.NewQueue(nil)
-	lau.config = config.NewConfig(nil)
-	lau.crypt = crypt.NewCryptor(nil)
+	lau.collector = collect.NewCollector()
+	lau.controller = control.NewController()
+	lau.writer = writer.NewWriter()
+	lau.queue = queue.NewQueue()
+	lau.config = config.NewConfig()
+	lau.crypt = crypt.NewCryptor()
+
+}
+
+// ModuleDisPatch dispatch module to diff manager
+// some modules may be included into more than one manager
+func (lau *Launch) ModuleDisPatch() {
+	// create creator
+	post := config.NewPostModule()
+	lau.creator = config.NewPostModule()
+
+	// create writer
+	dbw := writer.NewDBWriter()
+	wbw := writer.NewWebWriter()
+	// add writer
+	wrSl := []abstract.BaseWriterItem{dbw, wbw}
+	lau.AddWriter(wrSl)
+
+	// create queue item
+	dbq := queue.NewDbQueue()
+	wbq := queue.NewWebQueue()
+	// add queue item
+	queSl := []abstract.BaseQueueItem{dbq, wbq}
+	lau.AddQueue(queSl)
+
+	// create all module, modules are used more than one
+	hardware := config.NewHardwareModule()
+	sys := config.NewSysModule()
+	dbus := collect.NewDBusModule()
+
+	// create app monitor
+	app := collect.NewAppCollector()
+
+	// add module into config manager
+	cfgItems := []abstract.FileLoader{hardware, sys, post, dbus}
+	lau.AddConfigFileLoader(cfgItems)
+
+	// add module collector
+	colItems := []abstract.BaseCollectorItem{hardware, sys, dbus, app}
+	lau.AddCollector(colItems)
+}
+
+// AddConfigFileLoader add file loader item to file
+func (lau *Launch) AddConfigFileLoader(loaderSl []abstract.FileLoader) {
+	// add loaders
+	for _, loader := range loaderSl {
+		// try to load file
+		err := loader.LoadFromFile(loader.GetConfigPath())
+		if err != nil {
+			logger.Warningf("load file failed, err: %v", err)
+		}
+		// add module into file
+		lau.config.AddModule(loader.GetConfigPath(), loader)
+	}
+}
+
+// AddCollector add collector item to collector
+func (lau *Launch) AddCollector(colSl []abstract.BaseCollectorItem) {
+	// add base to collector
+	for _, col := range colSl {
+		// init collector item
+		err := col.Init()
+		if err != nil {
+			logger.Warningf("init collector failed, err: %v", err)
+		}
+		// add queue
+		go col.Collect(lau.queue)
+		lau.collector.AddModule(col.GetCollectName(), col)
+	}
+}
+
+// AddQueue add queue item
+func (lau *Launch) AddQueue(queSl []abstract.BaseQueueItem) {
+	for _, que := range queSl {
+		go que.Pop(lau.crypt, lau.controller, lau.creator, lau.writer)
+		lau.queue.AddModule(que.GetQueueName(), que)
+	}
+}
+
+func (lau *Launch) AddWriter(wrSl []abstract.BaseWriterItem) {
+	for _, wr := range wrSl {
+		wr.Connect(wr.GetRemote())
+	}
 }
 
 // GetCollector get collector
@@ -92,99 +178,11 @@ func (lau *Launch) GetQueue() abstract.BaseQueue {
 	return lau.queue
 }
 
-// AddWriterItemModules add writer item to module
-// now only has two module: web sender and database writer
-func (lau *Launch) AddWriterItemModules() {
-	if lau.writer == nil {
-		logger.Warningf("cant add writer modules, write hasn't been init")
-		return
-	}
-	// define need add modules
-	modules := []define.WriterItemModule{
-		define.WebItemWriter, define.DataBaseItemWriter,
-	}
-	// add modules
-	for _, module := range modules {
-		lau.config.AddModule(string(module))
-	}
-	logger.Debugf("writer modules add success, modules: %v", modules)
-}
-
-// AddQueueItemModules add queue item to queue
-// now only has two module: web queue and database queue
-func (lau *Launch) AddQueueItemModules() {
-	if lau.queue == nil {
-		logger.Warningf("cant add queue modules, queue hasn't been init")
-		return
-	}
-	// define need add modules
-	modules := []define.QueueItemModule{
-		define.WebItemQueue, define.DataBaseItemQueue,
-	}
-	// add modules
-	for _, module := range modules {
-		lau.config.AddModule(string(module))
-	}
-	logger.Debugf("queue modules add success, modules: %v", modules)
-}
-
-// AddConfigItemModules add config item to config
-// now only has three module: post system hardware
-func (lau *Launch) AddConfigItemModules() {
-	if lau.queue == nil {
-		logger.Warningf("cant add queue modules, queue hasn't been init")
-		return
-	}
-	// define need add modules
-	modules := []define.ConfigItemModule{
-		define.PostItemConfig, define.SystemItemConfig, define.HardwareItemConfig,
-	}
-	// add module
-	for _, module := range modules {
-		lau.config.AddModule(string(module))
-	}
-	logger.Debugf("queue modules add success, modules: %v", modules)
-}
-
-// AddCryptItemModules add crypt item to crypt data
-// since now crypt only has one item,
-// add this method is mention to notice maintainer,
-// this module can support more parts of crypt
-func (lau *Launch) AddCryptItemModules() {
-
-}
-
 // StartService start service
 func (lau *Launch) StartService() {
-	// start writer first
-	lau.launchWriter()
-	// start queue
-	lau.launchQueue()
-	//	launch config
-	lau.launchConfig()
+	lau.ModuleDisPatch()
 }
 
 func (lau *Launch) StopService() {
-
-}
-
-// launchWriter to make sure data can be sent and write,
-// writer module should be init at beginning
-func (lau *Launch) launchWriter() {
-	lau.writer.Connect()
-}
-
-// launchQueue should be start
-// queue start second time after writer is started
-func (lau *Launch) launchQueue() {
-	// TODO can optimize here
-	// start pop data to webserver once data is push into queue
-	lau.queue.Pop(define.WebItemQueue, lau.controller, lau.crypt, lau.writer)
-	// start pop data to database once data is push into queue
-	lau.queue.Pop(define.DataBaseItemQueue, lau.controller, lau.crypt, lau.writer)
-}
-
-// refreshConfig decide if need to update config message
-func (lau *Launch) launchConfig() {
 
 }

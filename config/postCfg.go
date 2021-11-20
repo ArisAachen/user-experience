@@ -3,6 +3,7 @@ package config
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/ArisAachen/experience/common"
 	"github.com/ArisAachen/experience/crypt"
 	"io/ioutil"
 	"os"
@@ -13,22 +14,25 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-// postCfg System config use to store system state info,
+// PostModule System config use to store system state info,
 // check if config has been changed,
 // if is, need re-check send message to writer
-type postCfg struct {
+type PostModule struct {
 	// file lock
 	lock sync.Mutex
 	define.PostInterface
 }
 
-// GetFileName get last store file name
-func (st *postCfg) GetFileName() string {
-	return define.PostCfgFile
+// NewPostModule create post module
+func NewPostModule() *PostModule {
+	post := &PostModule{
+
+	}
+	return post
 }
 
 // SaveToFile save protobuf config to file
-func (st *postCfg) SaveToFile(filename string) error {
+func (st *PostModule) SaveToFile(filename string) error {
 	// lock op
 	st.lock.Lock()
 	defer st.lock.Unlock()
@@ -54,7 +58,7 @@ func (st *postCfg) SaveToFile(filename string) error {
 }
 
 // LoadFromFile load protobuf config from file
-func (st *postCfg) LoadFromFile(filename string) error {
+func (st *PostModule) LoadFromFile(filename string) error {
 	// lock op
 	st.lock.Lock()
 	defer st.lock.Unlock()
@@ -73,7 +77,7 @@ func (st *postCfg) LoadFromFile(filename string) error {
 
 // Handler post interface is a tmp request,
 // so these request will not save to database even sent failed
-func (st *postCfg) Handler(base abstract.BaseQueue, controller abstract.BaseController, result define.WriteResult) {
+func (st *PostModule) Handler(base abstract.BaseQueue, controller abstract.BaseController, result define.WriteResult) {
 	// update interface is strict rule
 	defer controller.Release(define.StrictRule)
 
@@ -126,23 +130,27 @@ func (st *postCfg) Handler(base abstract.BaseQueue, controller abstract.BaseCont
 	}
 }
 
-// GetInterface not set
-func (st *postCfg) GetInterface() string {
-
-	return ""
-}
-
-// Push for update interface, should push data to webserver,
-func (st *postCfg) Push(que abstract.BaseQueue) {
-	
-}
-
 // GetConfigPath post interface config path
-func (st *postCfg) GetConfigPath() string {
-	return define.PostInterfacePath
+func (st *PostModule) GetConfigPath() string {
+	return define.PostCfgFile
 }
 
-// NeedUpdate post config should be call in every boot
-func (st *postCfg) NeedUpdate() bool {
-	return true
+// GetRandomPostUrls use to support post random urls
+func (st *PostModule) GetRandomPostUrls() []string {
+	var result []string
+	// get domains from post interfaces
+	domains := st.GetDomains()
+	// get all url from path
+	for _, domain := range domains {
+		result = append(result, domain.UrlPath)
+	}
+	// shuffle list
+	result = common.Shuffle(result)
+	logger.Debugf("current url is %v", result)
+	return result
+}
+
+// GetInterface now all message use only one interface
+func (st *PostModule) GetInterface(tid define.TidTyp) string {
+	return st.GetGeneral()
 }

@@ -29,10 +29,9 @@ type appCollectorItem struct {
 	lau *launch.Launch
 }
 
-// create app collector
-func newAppCollector(lau *launch.Launch) *appCollectorItem {
+// NewAppCollector create app collector
+func NewAppCollector() *appCollectorItem {
 	collector := &appCollectorItem{
-		lau:   lau,
 		items: make(map[string]define.AppEntry),
 	}
 	return collector
@@ -59,7 +58,7 @@ func (app *appCollectorItem) Init() error {
 }
 
 // Collect use to collect message
-func (app *appCollectorItem) Collect(que abstract.BaseQueue) error {
+func (app *appCollectorItem) Collect(que abstract.BaseQueue) {
 	// use to monitor items added
 	// sometimes user send some quick-start app to dock
 	// will also monitor this message
@@ -86,13 +85,18 @@ func (app *appCollectorItem) Collect(que abstract.BaseQueue) error {
 	// get all entries
 	entries, err := app.ddeDock.Entries().Get(0)
 	if err != nil {
-		return err
+		return
 	}
 	// monitor all entry
 	for _, entry := range entries {
 		go app.monitor(que, entry)
 	}
-	return nil
+	return
+}
+
+// GetCollectName get app collector
+func (app *appCollectorItem) GetCollectName() string {
+	return "app"
 }
 
 // Handler handle write to database result

@@ -16,16 +16,16 @@ type Writer struct {
 }
 
 // NewWriter create writer to manager all web sender and database writer
-func NewWriter(launch *launch.Launch) *Writer {
+func NewWriter() *Writer {
 	wr := &Writer{
-		launch: launch,
-		items:  make(map[define.WriterItemModule]abstract.BaseWriterItem),
+		items: make(map[define.WriterItemModule]abstract.BaseWriterItem),
 	}
 	return wr
 }
 
 // Write write data to diff writer item according to name
-func (wr *Writer) Write(name define.WriterItemModule, crypt abstract.BaseCryptor, controller abstract.BaseController, handler abstract.BaseQueueHandler, msg string) {
+func (wr *Writer) Write(name define.WriterItemModule, crypt abstract.BaseCryptor, controller abstract.BaseController,
+	handler abstract.BaseQueueHandler, creator abstract.BaseUrlCreator, msg string) {
 	// find item to write
 	item, ok := wr.items[name]
 	if !ok {
@@ -36,7 +36,7 @@ func (wr *Writer) Write(name define.WriterItemModule, crypt abstract.BaseCryptor
 	// each write should retry 3 times, including web and database
 	var circle int
 	var result define.WriteResult
-
+	url := creator.GetRandomPostUrls()
 	// write data to writer 3 times
 	// TODO these code can be optimize, using "for and circle" seems no good design because lack of flexibility
 	for {
@@ -46,7 +46,7 @@ func (wr *Writer) Write(name define.WriterItemModule, crypt abstract.BaseCryptor
 		}
 		// write data
 		logger.Debugf("begin to write data, circle: %v", circle)
-		result = item.Write(crypt, handler.GetInterface(), msg)
+		result = item.Write(crypt, url[0], msg)
 		// only sent failed can active retry write
 		if result.ResultCode != define.WriteResultWriteFailed {
 			circle++
@@ -60,24 +60,18 @@ func (wr *Writer) Write(name define.WriterItemModule, crypt abstract.BaseCryptor
 	}
 }
 
+func (wr *Writer) AddModule(name define.WriterItemModule, item abstract.BaseWriterItem) {
+	// check if already exist
+	if _, ok := wr.items[name]; ok {
+		return
+	}
+	// save file loader
+	wr.items[name] = item
+}
+
 // Connect each module try to connect self target
 func (wr *Writer) Connect() {
 	for _, item := range wr.items {
-		err := item.Connect(item.GetRemote())
-		if err != nil {
-			logger.Warningf("connect to remote failed")
-		}
-	}
-}
-
-func (wr *Writer) AddModule(module string) {
-	// check if module exist, add ref module
-	switch define.WriterItemModule(module) {
-	case define.WebItemWriter:
-		wr.items[define.WebItemWriter] = newWebWriter()
-	case define.DataBaseItemWriter:
-		wr.items[define.DataBaseItemWriter] = newDBWriter()
-	default:
-		logger.Warningf("add unknown writer item, module: %v", module)
+		item.Connect(item.GetRemote())
 	}
 }

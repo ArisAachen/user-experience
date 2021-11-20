@@ -3,28 +3,85 @@ package config
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/ArisAachen/experience/abstract"
 	"github.com/ArisAachen/experience/common"
 	"github.com/ArisAachen/experience/crypt"
+	"github.com/ArisAachen/experience/define"
+	"github.com/golang/protobuf/proto"
 	"io/ioutil"
 	"os"
 	"sync"
-
-	"github.com/ArisAachen/experience/abstract"
-	"github.com/ArisAachen/experience/define"
-	"github.com/golang/protobuf/proto"
 )
 
-// sysCfg System config use to store system state info,
+// SysModule System config use to store system state info,
 // check if config has been changed,
 // if is, need re-check send message to writer
-type sysCfg struct {
+type SysModule struct {
 	// file lock
 	lock sync.Mutex
 	define.SysCfg
 }
 
+// NewSysModule create system module
+func NewSysModule() *SysModule {
+	sys := &SysModule{
+	}
+	return sys
+}
+
+// Init init current module
+func (sys *SysModule) Init() error {
+	return nil
+}
+
+// Collect collect message
+func (sys *SysModule) Collect(que abstract.BaseQueue) {
+	// check if need update package
+	if sys.updatePkg() {
+		// get machine id from file
+		machine, err := common.GetMachineId()
+		if err != nil {
+			logger.Warningf("get machine id failed, err: %v", err)
+			return
+		}
+		// get edition from file
+		edition, err := common.GetEdition()
+		if err != nil {
+			logger.Warningf("get edition failed, err: %v", err)
+		}
+		version := "1.1.0"
+		// create update request
+		body := define.WriteUpdateReq{
+			Tid:     define.NewCheckUpdateTid,
+			Type:    edition,
+			Machine: machine,
+			Version: version,
+			Uni:     "",
+		}
+		// marshal req to json
+		buf, err := json.Marshal(body)
+		if err != nil {
+			logger.Warningf("marshal update request failed, err: %v", err)
+			return
+		}
+		// create request
+		req := define.RequestMsg{
+			Rule: define.LooseRule,
+			Pri:  define.SimpleRequest,
+			Msg:  string(buf),
+		}
+		// push data to queue
+		que.Push(define.WebItemQueue, sys, req)
+	}
+}
+
+// GetCollectName collect name
+func (sys *SysModule) GetCollectName() string {
+	return "system"
+}
+
 // SaveToFile save protobuf config to file
-func (sys *sysCfg) SaveToFile(filename string) error {
+func (sys *SysModule) SaveToFile(filename string) error {
 	// lock op
 	sys.lock.Lock()
 	defer sys.lock.Unlock()
@@ -48,7 +105,7 @@ func (sys *sysCfg) SaveToFile(filename string) error {
 }
 
 // LoadFromFile load protobuf config from file
-func (sys *sysCfg) LoadFromFile(filename string) error {
+func (sys *SysModule) LoadFromFile(filename string) error {
 	// lock op
 	sys.lock.Lock()
 	defer sys.lock.Unlock()
@@ -58,6 +115,7 @@ func (sys *sysCfg) LoadFromFile(filename string) error {
 	if err != nil {
 		return err
 	}
+	// unmarshal system config file
 	err = proto.Unmarshal(buf, &sys.SysCfg)
 	if err != nil {
 		return err
@@ -65,20 +123,8 @@ func (sys *sysCfg) LoadFromFile(filename string) error {
 	return nil
 }
 
-// check if hardware is changed, if is, should update
-func (sys *sysCfg) needUpdate() bool {
-	var update bool
-
-	return update
-}
-
-// name indicate hardware module nameS
-func (sys *sysCfg) name() string {
-	return "SystemConfig"
-}
-
 // Handler handle web sender result
-func (sys *sysCfg) Handler(base abstract.BaseQueue, controller abstract.BaseController, result define.WriteResult) {
+func (sys *SysModule) Handler(base abstract.BaseQueue, controller abstract.BaseController, result define.WriteResult) {
 	defer controller.Release(define.LooseRule)
 	// decode msg to find tid
 	msg := result.Origin
@@ -142,22 +188,17 @@ func (sys *sysCfg) Handler(base abstract.BaseQueue, controller abstract.BaseCont
 	base.Push(define.DataBaseItemQueue, nil, req)
 }
 
-func (sys *sysCfg) GetInterface() string {
-
+// GetInterface get post interface
+func (sys *SysModule) GetInterface() string {
 	return ""
 }
 
-func (sys *sysCfg) GetConfigPath() string {
-
-	return ""
+// GetConfigPath get config file
+func (sys *SysModule) GetConfigPath() string {
+	return define.SysCfgFile
 }
 
-// NeedUpdate when system config changed, should call update
-func (sys *sysCfg) NeedUpdate() bool {
+// updatePkg now update package should always
+func (sys *SysModule) updatePkg() bool {
 	return true
-}
-
-// Push for update interface, should push data to webserver,
-func (sys *sysCfg) Push(que abstract.BaseQueue) {
-
 }

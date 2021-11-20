@@ -14,20 +14,27 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-// hardwareCfg System config use to store hardware info
+// HardwareModule System config use to store hardware info
 // check if hardware is diff with last store,
 // if is, need re-check uni id from web
-type hardwareCfg struct {
+type HardwareModule struct {
 	// file lock
 	lock sync.Mutex
-	tmp  define.HardwareInfo
 	define.HardwareInfo
 
 	tunnel chan int
 }
 
+// NewHardwareModule create hardware config module
+func NewHardwareModule() *HardwareModule {
+	hw := &HardwareModule{
+
+	}
+	return hw
+}
+
 // SaveToFile save protobuf config to file
-func (hc *hardwareCfg) SaveToFile(filename string) error {
+func (hc *HardwareModule) SaveToFile(filename string) error {
 	// lock op
 	hc.lock.Lock()
 	defer hc.lock.Unlock()
@@ -53,7 +60,7 @@ func (hc *hardwareCfg) SaveToFile(filename string) error {
 }
 
 // LoadFromFile load protobuf config from file
-func (hc *hardwareCfg) LoadFromFile(filename string) error {
+func (hc *HardwareModule) LoadFromFile(filename string) error {
 	// lock op
 	hc.lock.Lock()
 	defer hc.lock.Unlock()
@@ -70,13 +77,8 @@ func (hc *hardwareCfg) LoadFromFile(filename string) error {
 	return nil
 }
 
-// name indicate hardware module nameS
-func (hc *hardwareCfg) name() string {
-	return "HardwareConfig"
-}
-
 // Handler use to handle write result
-func (hc *hardwareCfg) Handler(base abstract.BaseQueue, controller abstract.BaseController, result define.WriteResult) {
+func (hc *HardwareModule) Handler(base abstract.BaseQueue, controller abstract.BaseController, result define.WriteResult) {
 	// hardware update uni id is strict rule
 	defer controller.Release(define.StrictRule)
 	// for hardware config, write data to web sender failed,
@@ -119,16 +121,12 @@ func (hc *hardwareCfg) Handler(base abstract.BaseQueue, controller abstract.Base
 }
 
 // Init init current module
-func (hc *hardwareCfg) Init() {
-	// load file first, it is ok if file not exist first time
-	err := hc.LoadFromFile(hc.GetConfigPath())
-	if err != nil {
-		logger.Debugf("get load file from config, err: %v", err)
-	}
+func (hc *HardwareModule) Init() error {
+	return nil
 }
 
 // Collect to collect message
-func (hc *hardwareCfg) Collect(que queue.Queue) {
+func (hc *HardwareModule) Collect(que abstract.BaseQueue) {
 	// check if need update hardware uni
 	if hc.updateHardware() {
 
@@ -138,14 +136,19 @@ func (hc *hardwareCfg) Collect(que queue.Queue) {
 	logger.Debug("update uni id end")
 }
 
+// GetCollectName collect name
+func (hc *HardwareModule) GetCollectName() string {
+	return "hardware"
+}
+
 // hardware use to check if need update hard ware
-func (hc *hardwareCfg) updateHardware() bool {
+func (hc *HardwareModule) updateHardware() bool {
 
 	return false
 }
 
 // uni use to check if need update uni id
-func (hc *hardwareCfg) updateUni() bool {
+func (hc *HardwareModule) updateUni() bool {
 	// check if exist uni id
 	if hc.GetUniId() == "" {
 		logger.Debug("uni id not exist, need update package")
@@ -157,7 +160,7 @@ func (hc *hardwareCfg) updateUni() bool {
 }
 
 // update request update uni id
-func (hc *hardwareCfg) update(que queue.Queue) {
+func (hc *HardwareModule) update(que queue.Queue) {
 	// marshal data
 	buf, err := proto.Marshal(hc)
 	if err != nil {
@@ -175,13 +178,7 @@ func (hc *hardwareCfg) update(que queue.Queue) {
 	que.Push(define.WebItemQueue, hc, req)
 }
 
-// GetInterface get post interface
-func (hc *hardwareCfg) GetInterface() string {
-
-	return ""
-}
-
 // GetConfigPath get hardware config file
-func (hc *hardwareCfg) GetConfigPath() string {
+func (hc *HardwareModule) GetConfigPath() string {
 	return define.HwCfgFile
 }

@@ -9,16 +9,12 @@ import "github.com/ArisAachen/experience/launch"
 */
 
 func main() {
-
 	// create launch
 	lch := launch.NewLaunch()
 
 	// init launch and add modules
 	lch.Init()
-	lch.AddCryptItemModules()
-	lch.AddWriterItemModules()
-	lch.AddQueueItemModules()
-	lch.AddConfigItemModules()
+	lch.ModuleDisPatch()
 
 	// start service
 	lch.StartService()
