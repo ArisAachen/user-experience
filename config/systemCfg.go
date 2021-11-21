@@ -125,20 +125,15 @@ func (sys *SysModule) LoadFromFile(filename string) error {
 func (sys *SysModule) Handler(base abstract.BaseQueue, crypt abstract.BaseCryptor, controller abstract.BaseController, result define.WriteResult) {
 	defer controller.Release(define.LooseRule)
 	// decode msg to find tid
-	msg := result.Origin
 	var origin define.WriteOrigin
 	// unmarshal origin data, to decide which request has been sent
-	err := json.Unmarshal([]byte(msg), &origin)
-	if err != nil {
-		logger.Warningf("unmarshal origin data failed, err: %v", err)
-		return
-	}
-	logger.Debugf("system config req tid %v receive response", origin.Tid)
+	origin.Tid = define.NewCheckUpdateTid
+
 	// for system config, write data to web sender failed,
 	// should write data to database
 	// should marshal encrypt msg here
 	var cryptData define.CryptResult
-	err = json.Unmarshal(result.Msg, &cryptData)
+	err := json.Unmarshal(result.Msg, &cryptData)
 	if err != nil {
 		logger.Warningf("unmarshal encrypted post interface failed, err: %v", err)
 		return

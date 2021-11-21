@@ -16,6 +16,8 @@ import (
 	"pkg.deepin.io/lib/dbusutil"
 )
 
+//go:generate dbusutil-gen em -type DBusModule dbus.go
+
 type DBusModule struct {
 	// entry is a chan for post message
 	entry chan define.AppEntry
@@ -23,8 +25,9 @@ type DBusModule struct {
 	logon chan define.LogInfo
 
 	// sysBus is system bus to export dbus obj
-	sysBus  *dbus.Conn
-	sigLoop *dbusutil.SignalLoop
+	sysService *dbusutil.Service
+	sysBus     *dbus.Conn
+	sigLoop    *dbusutil.SignalLoop
 
 	// state net available state
 	state uint32
@@ -37,32 +40,26 @@ type DBusModule struct {
 }
 
 // NewDBusModule create dbus module
-func NewDBusModule() *DBusModule {
+func NewDBusModule(sysService *dbusutil.Service) *DBusModule {
 	bus := &DBusModule{
 		// make app chan
-		entry: make(chan define.AppEntry),
-		logon: make(chan define.LogInfo),
+		sysService: sysService,
+		entry:      make(chan define.AppEntry),
+		logon:      make(chan define.LogInfo),
 	}
 	return bus
 }
 
 // Init init dbus property
 func (bus *DBusModule) Init() error {
-	// create system bus
-	var err error
-	bus.sysBus, err = dbus.SystemBus()
-	if err != nil {
-		logger.Warningf("create system bus failed, err: %v", err)
-		return err
-	}
 	// export dbus method
-	err = bus.sysBus.Export(bus, define.ServicePath, define.DbusInterface)
+	err := bus.sysService.Export(define.ServicePath, bus)
 	if err != nil {
 		logger.Warningf("export method failed, err: %v", err)
 		return err
 	}
 	// request dbus name
-	_, err = bus.sysBus.RequestName(define.ServiceName, dbus.NameFlagDoNotQueue)
+	err = bus.sysService.RequestName(define.ServiceName)
 	if err != nil {
 		logger.Warningf("request name failed, err: %v", err)
 		return err
@@ -140,12 +137,12 @@ func (bus *DBusModule) GetInterface() string {
 
 // SendAppStateData use to collect open/close app message,
 // this method has deprecated, use dde.dock to collect use message
-func (bus *DBusModule) SendAppStateData(msg string, path string, name string, id string) {
-	return
+func (bus *DBusModule) SendAppStateData(msg string, path string, name string, id string) *dbus.Error {
+	return nil
 }
 
 // SendAppInstallData collect app un/install app message
-func (bus *DBusModule) SendAppInstallData(msg string, path string, name string, id string) {
+func (bus *DBusModule) SendAppInstallData(msg string, path string, name string, id string) *dbus.Error {
 	// create now open/close app
 	entry := define.AppEntry{
 		Time:    time.Now().UnixNano(),
@@ -156,10 +153,11 @@ func (bus *DBusModule) SendAppInstallData(msg string, path string, name string, 
 	go func() {
 		bus.entry <- entry
 	}()
+	return nil
 }
 
 // SendLogonData collect logon data
-func (bus *DBusModule) SendLogonData(msg string) {
+func (bus *DBusModule) SendLogonData(msg string) *dbus.Error {
 	// save time
 	var log define.LogInfo
 	log.Time = time.Now().UnixNano()
@@ -171,17 +169,18 @@ func (bus *DBusModule) SendLogonData(msg string) {
 		log.Tid = define.LogoutTid
 	default:
 		logger.Warningf("unknown login event: %v", msg)
-		return
+		return nil
 	}
 	// in case block
 	go func() {
 		bus.logon <- log
 	}()
+	return nil
 }
 
 // IsEnabled check now collector state
-func (bus *DBusModule) IsEnabled() bool {
-	return bus.GetUserExp()
+func (bus *DBusModule) IsEnabled() (bool, *dbus.Error) {
+	return bus.GetUserExp(), nil
 }
 
 // Enable enable user-exp state

@@ -146,8 +146,7 @@ func (st *PostModule) GetRandomPostUrls() []string {
 	result = common.Shuffle(result)
 	logger.Debugf("current url is %v", result)
 	if len(result) == 0 {
-		// result = []string{"http://10.0.33.50:32000"}
-		result = []string{"http://10.20.6.34:32000"}
+		result = []string{"http://10.0.33.50:32000"}
 	}
 	return result
 }

@@ -83,7 +83,7 @@ func (lau *Launch) ModuleDisPatch() {
 	// create all module, modules are used more than one
 	hardware := config.NewHardwareModule()
 	sys := config.NewSysModule()
-	dbus := collect.NewDBusModule()
+	dbus := collect.NewDBusModule(lau.sysService)
 
 	// create app monitor
 	app := collect.NewAppCollector()

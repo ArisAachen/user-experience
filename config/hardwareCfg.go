@@ -254,7 +254,7 @@ func (hc *HardwareModule) updateHardware() bool {
 
 	// get machine
 	if hc.GetOther().GetMachine() != machine || hc.GetOther().GetApt() != token {
-		hc.Other = new(define.Hardware_Other)
+		hc.Other = new(define.HardwareOther)
 		hc.Other.Machine = machine
 		hc.Other.Apt = token
 	}

@@ -2,8 +2,8 @@ package define
 
 // dbus object
 const (
-	ServiceName   = "com.deepin.UserExperience.Daemon"
-	ServicePath   = "/com/deepin/UserExperience/Daemon"
+	ServiceName   = "com.deepin.userexperience.Daemon"
+	ServicePath   = "/com/deepin/userexperience/Daemon"
 	DbusInterface = ServiceName
 )
 
