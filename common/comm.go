@@ -5,7 +5,9 @@ import (
 	"bytes"
 	"errors"
 	"io"
+	"io/ioutil"
 	"os/exec"
+	"pkg.deepin.io/lib/keyfile"
 
 	"github.com/ArisAachen/experience/define"
 )
@@ -32,6 +34,49 @@ func GetMemoryInfo() (define.BaseInfo, error) {
 func GetDiskInfo() (define.BaseInfo, error) {
 	return general(define.DiskModule)
 }
+
+// GetGpuInfo use lspci to get gpu info
+func GetGpuInfo() (define.BaseInfo, error) {
+	return general(define.GpuModule)
+}
+
+// GetNetworkInfo use lspci to get network info
+func GetNetworkInfo() (define.BaseInfo, error) {
+	return general(define.NetModule)
+}
+
+// GetEtherInfo use lspci to get network info
+func GetEtherInfo() (define.BaseInfo, error) {
+	return general(define.EtherModule)
+}
+
+// GetMachineId get machine id from file
+func GetMachineId() (string, error) {
+	// read machine id file
+	machine, err := ioutil.ReadFile(define.MachineFile)
+	if err != nil {
+		return "", err
+	}
+	return string(machine), nil
+}
+
+// GetEdition get os edition
+func GetEdition() (string, error) {
+	// read os-version file to find
+	kf := keyfile.NewKeyFile()
+	err := kf.LoadFromFile(define.SysTypFile)
+	if err != nil {
+		return "", err
+	}
+	// read edition name
+	typ, err := kf.GetString("Version", "EditionName")
+	if err != nil {
+		return "", err
+	}
+	return typ, nil
+}
+
+
 
 // general the general func to get system info
 func general(file define.SysModule) (define.BaseInfo, error) {

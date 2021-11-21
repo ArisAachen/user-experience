@@ -3,6 +3,7 @@ package config
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/ArisAachen/experience/common"
 	"io/ioutil"
 	"os"
 	"sync"
@@ -27,9 +28,7 @@ type HardwareModule struct {
 
 // NewHardwareModule create hardware config module
 func NewHardwareModule() *HardwareModule {
-	hw := &HardwareModule{
-
-	}
+	hw := &HardwareModule{}
 	return hw
 }
 
@@ -128,11 +127,22 @@ func (hc *HardwareModule) Init() error {
 // Collect to collect message
 func (hc *HardwareModule) Collect(que abstract.BaseQueue) {
 	// check if need update hardware uni
-	if hc.updateHardware() {
-
-	} else if hc.updateUni() {
-
+	if !hc.updateHardware() && !hc.updateUni() {
+		return
 	}
+	// create request
+	var req define.RequestMsg
+	msg, err := proto.Marshal(hc)
+	if err != nil {
+		logger.Warningf("marshal hardware message failed, err: %v", err)
+		return
+	}
+	// create request message
+	req.Rule = define.GentleRule
+	req.Pri = define.UpdateUniRequest
+	req.Msg = string(msg)
+	// push data
+	que.Push(define.WebItemQueue, hc, req)
 	logger.Debug("update uni id end")
 }
 
@@ -143,8 +153,84 @@ func (hc *HardwareModule) GetCollectName() string {
 
 // hardware use to check if need update hard ware
 func (hc *HardwareModule) updateHardware() bool {
+	var update bool
+	// cpu module
+	info, err := common.GetCpuInfo()
+	if err != nil {
+		logger.Warningf("cant get cpu info", err)
+	}
+	// TODO these code can be optimize
+	// check if need update
+	if hc.GetCpu().GetModule() != info.Model || hc.GetCpu().GetId() != info.Id {
+		update = true
+		hc.GetCpu().Id = info.Id
+		hc.GetCpu().Module = info.Model
+	}
 
-	return false
+	// board module
+	info, err = common.GetBaseBoardInfo()
+	if err != nil {
+		logger.Warningf("cant get board info, err: %v", err)
+	}
+	// check if need update
+	if hc.GetBoard().GetModule() != info.Model || hc.GetBoard().GetId() != info.Id {
+		update = true
+		hc.GetBoard().Id = info.Id
+		hc.GetBoard().Module = info.Model
+	}
+
+	// gpu module
+	info, err = common.GetGpuInfo()
+	if err != nil {
+		logger.Warningf("cant get gpu info, err: %v", err)
+	}
+	// check if need update
+	if hc.GetGpu().GetModule() != info.Model || hc.GetGpu().GetId() != info.Id {
+		update = true
+		hc.GetGpu().Id = info.Id
+		hc.GetGpu().Module = info.Model
+	}
+
+	// memory
+	info, err = common.GetMemoryInfo()
+	if err != nil {
+		logger.Warningf("cant get memory info, err: %v", err)
+	}
+	// check if need update
+	if hc.GetMemory().GetModule() != info.Model {
+		update = true
+		hc.GetMemory().Module = info.Id
+	}
+
+	// disk
+	info, err = common.GetDiskInfo()
+	if err != nil {
+		logger.Warningf("cant get disk info, err: %v", err)
+	}
+	// check if need update
+	if hc.GetDisk().GetModule() != info.Model {
+		update = true
+		hc.GetDisk().Module = info.Id
+	}
+
+	// network
+	info, err = common.GetNetworkInfo()
+	if err != nil {
+		logger.Warningf("cant get network info, err: %v", err)
+	}
+	// check if need update
+	if hc.GetDisk().GetModule() != info.Model {
+		update = true
+		hc.GetNetwork().Module = info.Id
+	}
+
+	//// check machine id
+	//machine, err := common.GetMachineId()
+	//if err != nil {
+	//	logger.Warningf("cant get machine info, err: %v", err)
+	//}
+
+	return update
 }
 
 // uni use to check if need update uni id
