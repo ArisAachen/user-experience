@@ -1,21 +1,19 @@
 package common
 
 import (
+	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
 	"crypto/rsa"
 	"errors"
 	"fmt"
-	"strconv"
-	"strings"
-
 	"github.com/ArisAachen/experience/define"
 )
 
 // PKCSEncode use to padding pkcs data
 // now pkcs encode use to encode pkcs7 and pkcs5(const blockSize 8)
-func PKCSEncode(msg string, blockSize int) string {
+func PKCSEncode(msg []byte, blockSize int) string {
 	// cal padding size
 	size := len(msg)
 	padSize := blockSize - (size % blockSize)
@@ -23,10 +21,10 @@ func PKCSEncode(msg string, blockSize int) string {
 		padSize = blockSize
 	}
 	// get repeat
-	padMsg := strconv.Itoa(padSize)
+	repeat := bytes.Repeat([]byte(string(rune(padSize))), padSize)
 	// create padding result
-	result := msg + strings.Repeat(padMsg, padSize)
-	return result
+	result := append(msg, repeat...)
+	return string(result)
 }
 
 // PKCSDecode use to unPadding pkcs data
@@ -83,7 +81,9 @@ func AesEncode(msg string) (define.CryptResult, error) {
 		return result, errors.New("aes encrypt not full block")
 	}
 	// use aes-cbc encrypt
-	mode.CryptBlocks([]byte(result.Data), []byte(msg))
+	buf := make([]byte, len([]byte(msg)))
+	mode.CryptBlocks(buf, []byte(msg))
+	result.Data = string(buf)
 	return result, nil
 }
 
@@ -143,4 +143,9 @@ func RSADecode(key *rsa.PrivateKey, msg string) (string, error) {
 	}
 	// decode rsa message success
 	return string(result), nil
+}
+
+// GetRandomString get random string
+func GetRandomString(length int) string {
+	return random(length)
 }

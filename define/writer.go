@@ -11,6 +11,7 @@ const (
 	SysCfgFile  = BaseCfgDir + "/" + "system"
 	PostCfgFile = BaseCfgDir + "/" + "post"
 	SqlitePath  = BaseCfgDir + "/" + "exp.db"
+	EncryptPath = BaseCfgDir + "/" + "pem"
 
 	BaseEtcDir  = "/etc"
 	MachineFile = BaseEtcDir + "/" + "machine-id"
@@ -39,11 +40,10 @@ const (
 
 // WriteUpdateReq write update request
 type WriteUpdateReq struct {
-	Tid     TidTyp
-	Machine string
-	Type    string
-	Version string
-	Uni     string
+	Tid     TidTyp `json:"tid"`
+	Machine string `json:"machine"`
+	Type    string `json:"sys_type"`
+	Version string `json:"version"`
 }
 
 // WriteOrigin origin data, use to decode
@@ -95,7 +95,7 @@ const (
 type RequestMsg struct {
 	Rule Rule
 	Pri  RequestLevel
-	Msg  string
+	Msg  []string
 }
 
 // RequestLevel priority to send data
@@ -130,6 +130,13 @@ const (
 	LogOutEvent   LogEvent = "logout"
 	ShutDownEvent LogEvent = "shutdown"
 )
+
+// PostRequest post request
+type PostRequest struct {
+	ReqTime int64    `json:"rt"`
+	Uni     string   `json:"unid"`
+	Data    []string `json:"data"`
+}
 
 // PostByte Post Byte Define
 // define the format of post interface,
@@ -194,7 +201,8 @@ const (
 type TidTyp int
 
 const (
-	MotherBoardTid TidTyp = iota
+	GeneralTid TidTyp = iota
+	MotherBoardTid
 	ProcessorTid
 	DisplayCardTid
 	VideoCardTid
@@ -232,12 +240,12 @@ const (
 	UosBuild
 	UosProduct
 
-	NewSystemInfoTid TidTyp = 1000 + iota
-	NewCheckUpdateTid
-	NewLoginTid
-	NewLogoutTid
-	NewAppOpenTid
-	NewAppCloseTid
+	NewSystemInfoTid  TidTyp = 1000
+	NewCheckUpdateTid TidTyp = 1001
+	NewLoginTid       TidTyp = 1002
+	NewLogoutTid      TidTyp = 1003
+	NewAppOpenTid     TidTyp = 1004
+	NewAppCloseTid    TidTyp = 1005
 )
 
 const (

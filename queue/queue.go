@@ -26,6 +26,7 @@ func (que *Queue) Push(module define.QueueItemModule, base abstract.BaseQueueHan
 		logger.Warningf("push data failed, queue %s not exist", module)
 		return
 	}
+	logger.Debugf(">>>>> send message is %v", msg.Msg)
 	// push data
 	item.Push(base, msg)
 }

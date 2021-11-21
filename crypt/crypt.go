@@ -30,6 +30,10 @@ func NewCryptor() *Cryptor {
 	return cy
 }
 
+func (cy *Cryptor) GetConfigPath() string {
+	return ""
+}
+
 // SaveToFile save rsa key to file
 // now rsa key is const,
 // but in the future, may allow update rsa key from webserver
@@ -38,15 +42,12 @@ func (cy *Cryptor) SaveToFile(filename string) error {
 }
 
 // LoadFromFile load rsa key from config file
-func (cy *Cryptor) LoadFromFile(filename string) error {
+func (cy *Cryptor) LoadFromFile(filepath string) error {
 	// lock op
-	//cy.lock.Lock()
-	//defer cy.lock.Unlock()
-
 	// read rsa keys from config
-	buf, err := ioutil.ReadFile(filename)
+	buf, err := ioutil.ReadFile(filepath)
 	if err != nil {
-		return err
+		// return err
 	}
 
 	// unmarshal buf to key buf
@@ -59,7 +60,9 @@ func (cy *Cryptor) LoadFromFile(filename string) error {
 
 	// public key and private key must both exist
 	if key.Public == "" || key.Private == "" {
-		return errors.New("at least one of rsa keys is nil")
+		key.Public = defaultPublic
+		key.Private = defaultPrivate
+		// return errors.New("at least one of rsa keys is nil")
 	}
 
 	// parse public key buf to rsa public key
@@ -100,9 +103,11 @@ func (cy *Cryptor) Encode(msg string) (define.CryptResult, error) {
 	if msg == "" {
 		return result, errors.New("encode msg is nil")
 	}
+	rand := common.GetRandomString(16)
+	msg = rand + msg
 	// use aes-cbc to encode sending data
 	// use pkcs7 to padding msg
-	padResult := common.PKCSEncode(msg, define.AecCbcBlockSize)
+	padResult := common.PKCSEncode([]byte(msg), define.AecCbcBlockSize)
 	// use aes-cbc to encode origin data
 	var err error
 	result, err = common.AesEncode(padResult)

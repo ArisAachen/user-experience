@@ -100,7 +100,7 @@ func (bus *DBusModule) Collect(que abstract.BaseQueue) {
 				continue
 			}
 			// request message
-			req.Msg = string(data)
+			req.Msg = []string{string(data)}
 			req.Pri = define.SimpleRequest
 			req.Rule = define.LooseRule
 		case log := <-bus.logon:
@@ -111,7 +111,7 @@ func (bus *DBusModule) Collect(que abstract.BaseQueue) {
 				continue
 			}
 			// request message
-			req.Msg = string(data)
+			req.Msg = []string{string(data)}
 			req.Pri = define.LogInOutRequest
 			req.Rule = define.LooseRule
 		default:

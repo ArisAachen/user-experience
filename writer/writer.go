@@ -21,7 +21,7 @@ func NewWriter() *Writer {
 
 // Write write data to diff writer item according to name
 func (wr *Writer) Write(name define.WriterItemModule, crypt abstract.BaseCryptor, controller abstract.BaseController,
-	handler abstract.BaseQueueHandler, creator abstract.BaseUrlCreator, msg string) {
+	handler abstract.BaseQueueHandler, creator abstract.BaseUrlCreator, msg []string) {
 	// find item to write
 	item, ok := wr.items[name]
 	if !ok {
@@ -32,7 +32,8 @@ func (wr *Writer) Write(name define.WriterItemModule, crypt abstract.BaseCryptor
 	// each write should retry 3 times, including web and database
 	var circle int
 	var result define.WriteResult
-	url := creator.GetRandomPostUrls()
+	// TODO should optimize
+	urlPath := creator.GetRandomPostUrls()[0] + creator.GetInterface(define.GeneralTid) + "?aid=uospc"
 	// write data to writer 3 times
 	// TODO these code can be optimize, using "for and circle" seems no good design because lack of flexibility
 	for {
@@ -42,12 +43,12 @@ func (wr *Writer) Write(name define.WriterItemModule, crypt abstract.BaseCryptor
 		}
 		// write data
 		logger.Debugf("begin to write data, circle: %v", circle)
-		result = item.Write(crypt, url[0], msg)
+		result = item.Write(crypt, urlPath, msg)
 		// only sent failed can active retry write
 		if result.ResultCode != define.WriteResultWriteFailed {
-			circle++
 			break
 		}
+		circle++
 	}
 	// handler write result, now only write web server failed case should be
 	// TODO

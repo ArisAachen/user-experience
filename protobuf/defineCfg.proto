@@ -8,64 +8,63 @@ package define;
 
 // Basic object struct for mul message
 message Obj {
-  string module = 1;
-  string id = 2;
+    string module = 1;
+    string id = 2;
 }
 
-message HardwareOther {
-  string machine = 1;
-  string apt = 2;
-  string active = 3;
+message Hardware_Other {
+    string machine = 1;
+    string apt = 2;
+    string active = 3;
 }
 
 // save hardware info last time
 message HardwareInfo {
-  string mac = 1;
-  string os_type = 4;
-  string os_version = 5;
-  string version = 6;
-  string uni_id = 7;
-  Obj cpu = 8;
-  Obj board = 9;
-  Obj gpu = 10;
-  Obj memory = 11;
-  Obj disk = 12;
-  Obj network = 13;
-  HardwareOther other = 14;
+    int32    tid = 1;
+    string os_type = 4;
+    string version = 6;
+    string uni_id = 7;
+    Obj cpu = 8;
+    Obj board = 9;
+    Obj gpu = 10;
+    Obj memory = 11;
+    Obj disk = 12;
+    Obj network = 13;
+    Hardware_Other other = 14;
 }
 
 // save post abstract
 message PostDomain {
-  string url_path = 1;
-  uint64 time = 2;
+    string url_path = 1;
+    uint64 time = 2;
 }
 
 // save post interfaces info last time
 message PostInterface {
-  // all domains {"https://abc.com",12345}
-  repeated PostDomain domains = 1;
-  string base = 2;
-  string info = 3;
-  string order = 4;
-  string apt = 5;
-  string use = 6;
-  string update = 7;
-  string update_domain = 8;
-  string update_path = 9;
-  string general = 10;
+    // all domains {"https://abc.com",12345}
+    repeated PostDomain domains = 1;
+    string base = 2;
+    string info = 3;
+    string order = 4;
+    string apt = 5;
+    string use = 6;
+    string update = 7;
+    string update_domain = 8;
+    string update_path = 9;
+    string general = 10;
 }
 
 // save system ref config, apt time, user-exp-enabled, develop-mode
 message SysCfg {
-  bool develop = 1;
-  bool user_exp = 2;
-  uint64 apt = 3;
+    bool develop = 1;
+    bool user_exp = 2;
+    uint64 apt = 3;
 }
 
 
 
 // RSAKey store rsa public key and private key
 message RsaKey {
-  string public = 1;
-  string private = 2;
+    string public = 1;
+    string private = 2;
 }

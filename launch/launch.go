@@ -53,23 +53,25 @@ func (lau *Launch) Init(sys *dbusutil.Service) {
 	lau.writer = writer.NewWriter()
 	lau.queue = queue.NewQueue()
 	lau.config = config.NewConfig()
-	lau.crypt = crypt.NewCryptor()
 	lau.observer = control.NewObserver()
 }
 
 // ModuleDisPatch dispatch module to diff manager
 // some modules may be included into more than one manager
 func (lau *Launch) ModuleDisPatch() {
-	// create creator
-	post := config.NewPostModule()
-	lau.creator = config.NewPostModule()
-
+	// create crypt
+	cry := crypt.NewCryptor()
+	lau.crypt = cry
 	// create writer
 	dbw := writer.NewDBWriter()
 	wbw := writer.NewWebWriter()
 	// add writer
 	wrSl := []abstract.BaseWriterItem{dbw, wbw}
 	lau.AddWriter(wrSl)
+
+	// create creator
+	post := config.NewPostModule()
+	lau.creator = config.NewPostModule()
 
 	// create queue item
 	dbq := queue.NewDbQueue()
@@ -87,7 +89,7 @@ func (lau *Launch) ModuleDisPatch() {
 	app := collect.NewAppCollector()
 
 	// add module into config manager
-	cfgItems := []abstract.FileLoader{hardware, sys, post, dbus}
+	cfgItems := []abstract.FileLoader{cry, hardware, sys, post, dbus}
 	lau.AddConfigFileLoader(cfgItems)
 
 	// add module collector
@@ -114,7 +116,6 @@ func (lau *Launch) ModuleDisPatch() {
 		return
 	}
 	notify.Handle(lau.observer)
-
 
 }
 
@@ -158,6 +159,7 @@ func (lau *Launch) AddQueue(queSl []abstract.BaseQueueItem) {
 func (lau *Launch) AddWriter(wrSl []abstract.BaseWriterItem) {
 	for _, wr := range wrSl {
 		wr.Connect(wr.GetRemote())
+		lau.writer.AddModule(wr.GetWriterItemName(), wr)
 	}
 }
 

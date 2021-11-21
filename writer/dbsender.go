@@ -8,7 +8,6 @@ import (
 	"sync"
 
 	"github.com/ArisAachen/experience/abstract"
-	"github.com/ArisAachen/experience/common"
 	"github.com/ArisAachen/experience/define"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -73,10 +72,10 @@ func (db *DBSender) GetCollectName() string {
 }
 
 // Write write data to ref table
-func (db *DBSender) Write(crypt abstract.BaseCryptor, table string, msg string) define.WriteResult {
+func (db *DBSender) Write(crypt abstract.BaseCryptor, table string, msg []string) define.WriteResult {
 	// write database result
 	var result define.WriteResult
-	value, err := url.ParseQuery(msg)
+	value, err := url.ParseQuery("")
 	if err != nil {
 		result.ResultCode = define.WriteParseQueryFailed
 		logger.Warningf("parse query message failed, err: %v", err)
@@ -136,9 +135,11 @@ func (db *DBSender) Collect(que abstract.BaseQueue) {
 	}
 	// create table header
 	var id int
-	var msg string
+
+	var dataMsg []string
 	// row to end
 	for row.Next() {
+		msg := ""
 		// scan result
 		err = row.Scan(&id, &msg)
 		if err != nil {
@@ -146,16 +147,16 @@ func (db *DBSender) Collect(que abstract.BaseQueue) {
 			continue
 		}
 		// convert data level
-		level := common.QueryLevel(define.TidTyp(id))
-		// TODO rule
-		req := define.RequestMsg{
-			Rule: define.StrictRule,
-			Pri:  level,
-			Msg:  msg,
-		}
-		// push current item to web queue
-		que.Push(define.WebItemQueue, db, req)
+		dataMsg = append(dataMsg, msg)
 	}
+	// TODO rule
+	msg := define.RequestMsg{
+		Rule: define.LooseRule,
+		Pri:  define.SimpleRequest,
+		Msg:  dataMsg,
+	}
+	// push current item to web queue
+	que.Push(define.WebItemQueue, db, msg)
 }
 
 func (db *DBSender) GetInterface() string {
@@ -205,4 +206,8 @@ func (db *DBSender) createTable(table string) error {
 	}
 	logger.Debugf("table %v exist", table)
 	return nil
+}
+
+func (db *DBSender) GetWriterItemName() define.WriterItemModule {
+	return define.DataBaseItemWriter
 }

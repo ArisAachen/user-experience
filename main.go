@@ -23,7 +23,6 @@ func main() {
 
 	// init launch and add modules
 	lch.Init(sysService)
-	lch.ModuleDisPatch()
 
 	// start service
 	lch.StartService()

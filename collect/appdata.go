@@ -209,7 +209,7 @@ func (app *appCollectorItem) post(que abstract.BaseQueue, desktop define.AppEntr
 	req := define.RequestMsg{
 		Pri:  define.SimpleRequest,
 		Rule: define.LooseRule,
-		Msg:  string(data),
+		Msg:  []string{string(data)},
 	}
 	// push data to queue
 	que.Push(define.DataBaseItemQueue, app, req)

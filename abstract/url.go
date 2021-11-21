@@ -6,4 +6,5 @@ import "github.com/ArisAachen/experience/define"
 type BaseUrlCreator interface {
 	GetRandomPostUrls() []string
 	GetInterface(tid define.TidTyp) string
+	GetAid() string
 }

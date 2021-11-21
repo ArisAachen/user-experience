@@ -59,7 +59,8 @@ func GetMachineId() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return string(machine), nil
+	result := strings.Trim(string(machine), "\n")
+	return result, nil
 }
 
 // GetAptToken get apt token from file

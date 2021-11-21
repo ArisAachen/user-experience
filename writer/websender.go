@@ -33,7 +33,7 @@ type WebWriterItem struct {
 func NewWebWriter() *WebWriterItem {
 	clt := &WebWriterItem{
 		client: http.Client{
-			Timeout: 500 * time.Millisecond,
+			Timeout: 5 * time.Second,
 		},
 	}
 	return clt
@@ -55,10 +55,23 @@ func (web *WebWriterItem) GetRemote() string {
 }
 
 // Write write message to web
-func (web *WebWriterItem) Write(crypt abstract.BaseCryptor, url string, msg string) define.WriteResult {
+func (web *WebWriterItem) Write(crypt abstract.BaseCryptor, url string, msg []string) define.WriteResult {
 	var result define.WriteResult
+	req := define.PostRequest{
+		ReqTime: time.Now().UnixNano() / 1e6,
+		Uni:     "",
+		Data:    msg,
+	}
+	// marshal request
+	buf, err := json.Marshal(&req)
+	if err != nil {
+		result.ResultCode = define.WriteResultUnknown
+		logger.Warningf("marshal request message failed, err: %v", err)
+		return result
+	}
+	logger.Debugf("post request message is %v", req)
 	// use Cryptor to crypt data
-	cryResult, err := crypt.Encode(msg)
+	cryResult, err := crypt.Encode(string(buf))
 	if err != nil {
 		// when data encrypt failed, just drop this data
 		// also this module can return to handler, if some special handle is needed
@@ -67,6 +80,8 @@ func (web *WebWriterItem) Write(crypt abstract.BaseCryptor, url string, msg stri
 	}
 	reader := strings.NewReader(cryResult.Data)
 	// post data
+	// TODO should optimize
+	url = url + "&key=" + cryResult.Key
 	resp, err := web.client.Post(url, "application/json", reader)
 	// post data failed at this time
 	if err != nil {
@@ -83,7 +98,7 @@ func (web *WebWriterItem) Write(crypt abstract.BaseCryptor, url string, msg stri
 		return result
 	}
 	// read message from body
-	buf, err := ioutil.ReadAll(resp.Body)
+	buf, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
 		result.ResultCode = define.WriteResultReadBodyFailed
 		logger.Warningf("read body failed, err: %v", err)
@@ -120,4 +135,8 @@ func (web *WebWriterItem) Write(crypt abstract.BaseCryptor, url string, msg stri
 		logger.Warningf("web server response unknown code: %v", rcv.Code)
 	}
 	return result
+}
+
+func (web *WebWriterItem) GetWriterItemName() define.WriterItemModule {
+	return define.WebItemWriter
 }

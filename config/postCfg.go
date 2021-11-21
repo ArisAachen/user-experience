@@ -147,10 +147,19 @@ func (st *PostModule) GetRandomPostUrls() []string {
 	// shuffle list
 	result = common.Shuffle(result)
 	logger.Debugf("current url is %v", result)
+	if len(result) == 0 {
+		// result = []string{"http://10.0.33.50:32000"}
+		result = []string{"http://10.20.6.34:32000"}
+	}
 	return result
 }
 
 // GetInterface now all message use only one interface
 func (st *PostModule) GetInterface(tid define.TidTyp) string {
-	return st.GetGeneral()
+	// return st.GetGeneral()
+	return "/v2/report/unification"
+}
+
+func (st *PostModule) GetAid() string {
+	return "uospc"
 }

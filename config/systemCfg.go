@@ -56,7 +56,6 @@ func (sys *SysModule) Collect(que abstract.BaseQueue) {
 			Type:    edition,
 			Machine: machine,
 			Version: version,
-			Uni:     "",
 		}
 		// marshal req to json
 		buf, err := json.Marshal(body)
@@ -68,7 +67,7 @@ func (sys *SysModule) Collect(que abstract.BaseQueue) {
 		req := define.RequestMsg{
 			Rule: define.LooseRule,
 			Pri:  define.SimpleRequest,
-			Msg:  string(buf),
+			Msg:  []string{string(buf)},
 		}
 		// push data to queue
 		que.Push(define.WebItemQueue, sys, req)

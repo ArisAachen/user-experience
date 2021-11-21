@@ -3,6 +3,7 @@ package config
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/golang/protobuf/jsonpb"
 	"io/ioutil"
 	"os"
 	"sync"
@@ -130,17 +131,20 @@ func (hc *HardwareModule) Collect(que abstract.BaseQueue) {
 	if !hc.updateHardware() && !hc.updateUni() {
 		return
 	}
+	hc.Tid = int32(define.NewSystemInfoTid)
 	// create request
 	var req define.RequestMsg
-	msg, err := proto.Marshal(hc)
+	marshal := jsonpb.Marshaler{}
+	buf, err := marshal.MarshalToString(hc)
 	if err != nil {
 		logger.Warningf("marshal hardware message failed, err: %v", err)
 		return
 	}
 	// create request message
-	req.Rule = define.GentleRule
+	req.Rule = define.StrictRule
 	req.Pri = define.UpdateUniRequest
-	req.Msg = string(msg)
+	req.Msg = []string{string(buf)}
+	logger.Debugf("hardware marshal %v", req.Msg)
 	// push data
 	que.Push(define.WebItemQueue, hc, req)
 	logger.Debug("update uni id end")
@@ -247,7 +251,7 @@ func (hc *HardwareModule) updateHardware() bool {
 
 	// get machine
 	if hc.GetOther().GetMachine() != machine || hc.GetOther().GetApt() != token {
-		hc.Other = new(define.HardwareOther)
+		hc.Other = new(define.Hardware_Other)
 		hc.Other.Machine = machine
 		hc.Other.Apt = token
 	}
@@ -284,7 +288,7 @@ func (hc *HardwareModule) update(que queue.Queue) {
 	req := define.RequestMsg{
 		Rule: define.StrictRule,
 		Pri:  define.UpdateUniRequest,
-		Msg:  string(buf),
+		Msg:  []string{string(buf)},
 	}
 	// push data to message queue
 	que.Push(define.WebItemQueue, hc, req)

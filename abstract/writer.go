@@ -7,7 +7,8 @@ import (
 // BaseWriter indicate which writer to use
 // after write, call handler here
 type BaseWriter interface {
-	Write(name define.WriterItemModule, crypt BaseCryptor, controller BaseController, handler BaseQueueHandler, creator BaseUrlCreator, msg string)
+	AddModule(name define.WriterItemModule, item BaseWriterItem)
+	Write(name define.WriterItemModule, crypt BaseCryptor, controller BaseController, handler BaseQueueHandler, creator BaseUrlCreator, msg []string)
 	Connect()
 }
 
@@ -15,7 +16,8 @@ type BaseWriter interface {
 // all writer handler should realize
 // path is the url of post web server or table name of database
 type BaseWriterItem interface {
-	Write(crypt BaseCryptor, path string, msg string) define.WriteResult
+	GetWriterItemName() define.WriterItemModule
+	Write(crypt BaseCryptor, path string, msg []string) define.WriteResult
 	// Connect connect to web or database
 	Connect(url string)
 	// GetRemote get connect path
