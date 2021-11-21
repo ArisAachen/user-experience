@@ -1,13 +1,12 @@
 package common
 
 import (
-	"github.com/ArisAachen/experience/define"
-	"io/ioutil"
 	"math/rand"
 	"os/exec"
-	"pkg.deepin.io/lib/keyfile"
 	"strings"
 	"time"
+
+	"github.com/ArisAachen/experience/define"
 )
 
 // QueryLevel query tid level
@@ -87,28 +86,4 @@ func getRandomInt(min, max int) int {
 	return nRound
 }
 
-// GetMachineId get machine id from file
-func GetMachineId() (string, error) {
-	// read machine id file
-	machine, err := ioutil.ReadFile(define.MachineFile)
-	if err != nil {
-		return "", err
-	}
-	return string(machine), nil
-}
 
-// GetEdition get os edition
-func GetEdition() (string, error) {
-	// read os-version file to find
-	kf := keyfile.NewKeyFile()
-	err := kf.LoadFromFile(define.SysTypFile)
-	if err != nil {
-		return "", err
-	}
-	// read edition name
-	typ, err := kf.GetString("Version", "EditionName")
-	if err != nil {
-		return "", err
-	}
-	return typ, nil
-}

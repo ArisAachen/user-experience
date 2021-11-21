@@ -6,6 +6,9 @@ const (
 	baseboard = "baseboard"
 	memory    = "memory"
 	disk      = "disk"
+	vga       = "VGA"
+	network   = "Network"
+	ether     = "Ethernet"
 )
 
 // SysModule indicate system info file
@@ -17,6 +20,9 @@ const (
 	BoardModule  SysModule = "BoardModule"
 	MemoryModule SysModule = "MemoryModule"
 	DiskModule   SysModule = "DiskModule"
+	GpuModule    SysModule = "GpuModule"
+	NetModule    SysModule = "NetworkModule"
+	EtherModule  SysModule = "EtherModule"
 )
 
 // String check if now file path is valid and convert to string
@@ -41,6 +47,12 @@ func (info SysModule) Module() string {
 		return memory
 	case DiskModule:
 		return disk
+	case GpuModule:
+		return vga
+	case NetModule:
+		return network
+	case EtherModule:
+		return ether
 	}
 	return ""
 }
@@ -61,13 +73,23 @@ const (
 
 	// MemoryMaximumCapacity is read key of memory
 	MemoryMaximumCapacity SysInfoKey = "MaximumCapacity"
+
+	// VgaController is read key of VGA
+	VgaController SysInfoKey = "VGA compatible controllerl"
+
+	// EthernetController is read key of Ethernet
+	EthernetController SysInfoKey = "Ethernet controller"
+
+	// NetworkController is read key of Network
+	NetworkController SysInfoKey = "Network controller"
 )
 
 // String check if system key is valid and convert to string
 func (key SysInfoKey) String() string {
 	switch key {
 	case ProcessorVersion, ProcessorId, BoardProductName,
-		BoardSerialNumber, MemoryMaximumCapacity:
+		BoardSerialNumber, MemoryMaximumCapacity, VgaController,
+		NetworkController, EthernetController:
 		return string(key)
 	default:
 	}
@@ -80,11 +102,12 @@ type Tool string
 const (
 	DmiDecode Tool = "dmidecode"
 	LsBlk     Tool = "lsblk"
+	LsPci     Tool = "lspci"
 )
 
 func (t Tool) String() string {
 	switch t {
-	case DmiDecode, LsBlk:
+	case DmiDecode, LsBlk, LsPci:
 		return string(t)
 	default:
 	}
