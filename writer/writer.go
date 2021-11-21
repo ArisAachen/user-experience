@@ -33,7 +33,13 @@ func (wr *Writer) Write(name define.WriterItemModule, crypt abstract.BaseCryptor
 	var circle int
 	var result define.WriteResult
 	// TODO should optimize
-	urlPath := creator.GetRandomPostUrls()[0] + creator.GetInterface(define.GeneralTid) + "?aid=uospc"
+	var urlPath string
+	if name == define.DataBaseItemWriter {
+		urlPath = "exp"
+	} else if name == define.DataBaseItemWriter {
+		urlPath = creator.GetRandomPostUrls()[0] + creator.GetInterface(define.GeneralTid) + "?aid=uospc"
+	}
+
 	// write data to writer 3 times
 	// TODO these code can be optimize, using "for and circle" seems no good design because lack of flexibility
 	for {

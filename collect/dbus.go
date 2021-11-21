@@ -100,6 +100,8 @@ func (bus *DBusModule) Collect(que abstract.BaseQueue) {
 			req.Msg = []string{string(data)}
 			req.Pri = define.SimpleRequest
 			req.Rule = define.LooseRule
+			// push data to queue
+			go que.Push(define.DataBaseItemQueue, bus, req)
 		case log := <-bus.logon:
 			// marshal app info
 			data, err := json.Marshal(&log)
@@ -111,12 +113,9 @@ func (bus *DBusModule) Collect(que abstract.BaseQueue) {
 			req.Msg = []string{string(data)}
 			req.Pri = define.LogInOutRequest
 			req.Rule = define.LooseRule
-		default:
-			logger.Warning("collect unknown request")
-			return
+			// push data to queue
+			go que.Push(define.DataBaseItemQueue, bus, req)
 		}
-		// push data to queue
-		go que.Push(define.DataBaseItemQueue, bus, req)
 	}
 }
 

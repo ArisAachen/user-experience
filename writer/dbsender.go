@@ -2,9 +2,10 @@ package writer
 
 import (
 	"database/sql"
+	"encoding/base64"
 	"errors"
 	"fmt"
-	"net/url"
+	"strings"
 	"sync"
 
 	"github.com/ArisAachen/experience/abstract"
@@ -75,16 +76,10 @@ func (db *DBSender) GetCollectName() string {
 func (db *DBSender) Write(crypt abstract.BaseCryptor, table string, msg []string) define.WriteResult {
 	// write database result
 	var result define.WriteResult
-	value, err := url.ParseQuery("")
-	if err != nil {
-		result.ResultCode = define.WriteParseQueryFailed
-		logger.Warningf("parse query message failed, err: %v", err)
-		return result
-	}
 	// get tid from params
-	id := value.Get(string(define.Tid))
+	// id := 1
 	// get data happens time from params
-	time := value.Get(string(define.DataTime))
+	// now := time.Now().UnixNano() / 1e6
 	// check if database already opened
 	if db.client == nil {
 		result.ResultCode = define.WriteResultUnknown
@@ -101,16 +96,18 @@ func (db *DBSender) Write(crypt abstract.BaseCryptor, table string, msg []string
 		return result
 	}
 	// create table if table not exist
-	err = db.createTable(table)
+	err := db.createTable(table)
 	if err != nil {
 		result.ResultCode = define.WriteResultUnknown
 		logger.Warningf("create table %v failed, err: %v", table, err)
 		return result
 	}
 	// create insert request
-	insert := fmt.Sprintf("insert into %v(Type Data Nano) values(%v %v %v)", table, id, msg, time)
+	input := strings.Join(msg, "")
+	input = base64.StdEncoding.EncodeToString([]byte(input))
+	insert := fmt.Sprintf(`insert into %v(Data) values("%v");`, table, input)
 	logger.Debugf("insert table %v command: %v", table, insert)
-	_, err = db.client.Query(insert)
+	_, err = db.client.Exec(insert)
 	if err != nil {
 		result.ResultCode = define.WriteResultWriteFailed
 		logger.Warningf("insert data into database failed, err: %v", err)
@@ -127,27 +124,30 @@ func (db *DBSender) Collect(que abstract.BaseQueue) {
 		return
 	}
 	// select data from table
-	req := "select Type ,Data from table order by Type,Nano"
+	req := fmt.Sprintf("select Data from %v", "exp")
 	row, err := db.client.Query(req)
 	if err != nil {
 		logger.Warningf("get data from database failed, err: %v", err)
 		return
 	}
 	// create table header
-	var id int
-
 	var dataMsg []string
 	// row to end
 	for row.Next() {
-		msg := ""
+		var tmp string
 		// scan result
-		err = row.Scan(&id, &msg)
+		err = row.Scan(&tmp)
 		if err != nil {
 			logger.Warningf("scan failed, err: %v", err)
 			continue
 		}
+		msg, err := base64.StdEncoding.DecodeString(tmp)
+		if err != nil {
+			logger.Warningf("decode database base64 failed, err: %v", err)
+			continue
+		}
 		// convert data level
-		dataMsg = append(dataMsg, msg)
+		dataMsg = append(dataMsg, string(msg))
 	}
 	// TODO rule
 	msg := define.RequestMsg{
@@ -176,7 +176,7 @@ func (db *DBSender) Handler(base abstract.BaseQueue, crypt abstract.BaseCryptor,
 	}
 	// TODO table
 	req := "delete from table where data=" + result.Origin
-	_, err := db.client.Query(req)
+	_, err := db.client.Exec(req)
 	if err != nil {
 		logger.Warningf("delete data from table %v failed, err: %v", err)
 		return
@@ -193,14 +193,14 @@ func (db *DBSender) createTable(table string) error {
 	}
 	// create table is table not exist
 	typ := `
-	Type integer NOT NULL,
-	Data Text NOT NULL,
-	Nano timestamp NOT NULL
+	Type integer,
+	Data Text,
+	Nano timestamp
 	`
 	// create table typ
 	req := fmt.Sprintf("create table if not exists %v(%v)", table, typ)
 	logger.Debugf("sql create table req: %v", req)
-	_, err := db.client.Query(req)
+	_, err := db.client.Exec(req)
 	if err != nil {
 		return err
 	}
