@@ -126,6 +126,7 @@ func (mem *memoryParser) parse(info *define.BaseInfo, buf []byte) {
 	}
 	// get key
 	key := strings.TrimSpace(msgSl[0])
+	key = strings.Trim(key, "\t")
 	switch key {
 	case define.MemoryMaximumCapacity.String():
 		info.Model = strings.TrimSpace(msgSl[1])

@@ -6,10 +6,12 @@ import (
 	"errors"
 	"io"
 	"io/ioutil"
+	"log"
 	"os/exec"
-	"pkg.deepin.io/lib/keyfile"
+	"strings"
 
 	"github.com/ArisAachen/experience/define"
+	"pkg.deepin.io/lib/keyfile"
 )
 
 // comm Module
@@ -60,6 +62,21 @@ func GetMachineId() (string, error) {
 	return string(machine), nil
 }
 
+// GetAptToken get apt token from file
+func GetAptToken() (string, error) {
+	// get token file
+	buf, err := ioutil.ReadFile(define.AptTokenFile)
+	if err != nil {
+		return "", err
+	}
+	// split
+	msgSl := strings.Split(string(buf), " ")
+	if len(msgSl) != 2 {
+		return "", errors.New("apt token file length invalid")
+	}
+	return msgSl[1], nil
+}
+
 // GetEdition get os edition
 func GetEdition() (string, error) {
 	// read os-version file to find
@@ -76,8 +93,6 @@ func GetEdition() (string, error) {
 	return typ, nil
 }
 
-
-
 // general the general func to get system info
 func general(file define.SysModule) (define.BaseInfo, error) {
 	// init cpu info
@@ -92,6 +107,7 @@ func general(file define.SysModule) (define.BaseInfo, error) {
 
 	// use dmi command read cpu info
 	cmd := exec.Command("/bin/bash", "-c", parser.param())
+	log.Println(cmd.Args)
 	// run command
 	buffer, err := cmd.CombinedOutput()
 	if err != nil {

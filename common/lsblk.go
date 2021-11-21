@@ -1,6 +1,7 @@
 package common
 
 import (
+	"bytes"
 	"encoding/json"
 	"strings"
 
@@ -29,11 +30,7 @@ func (blk *blkParser) parse(info *define.BaseInfo, buf []byte) {
 	if info == nil {
 		return
 	}
-	msgSl := strings.Split(string(buf), ":")
-	// check length, in case of panic
-	if len(msgSl) < 2 {
-		return
-	}
+	buf = bytes.TrimRight(buf, ",")
 	// for block module, buf type is json
 	// try to unmarshal file
 	var block blkMsg

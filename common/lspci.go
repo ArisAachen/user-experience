@@ -16,13 +16,13 @@ func (gpu *gpuParser) parse(info *define.BaseInfo, buf []byte) {
 	}
 	msgSl := strings.Split(string(buf), ":")
 	// check length, in case of panic
-	if len(msgSl) < 2 {
+	if len(msgSl) < 3 {
 		return
 	}
-	// get key
-	key := msgSl[0]
+	// get key VGA compatible controller
+	key := msgSl[1]
 	if strings.Contains(key, define.VgaController.String()) {
-		info.Model = strings.TrimLeft(msgSl[1], " ")
+		info.Model = strings.TrimLeft(msgSl[2], " ")
 	}
 	return
 }
@@ -89,13 +89,13 @@ func (ether *etherParser) parse(info *define.BaseInfo, buf []byte) {
 	}
 	msgSl := strings.Split(string(buf), ":")
 	// check length, in case of panic
-	if len(msgSl) < 2 {
+	if len(msgSl) < 3 {
 		return
 	}
 	// get key
-	key := msgSl[0]
+	key := msgSl[1]
 	if strings.Contains(key, define.EthernetController.String()) {
-		info.Model = strings.TrimLeft(msgSl[1], " ")
+		info.Model = strings.TrimLeft(msgSl[2], " ")
 	}
 }
 

@@ -6,9 +6,11 @@ import (
 	"github.com/ArisAachen/experience/config"
 	"github.com/ArisAachen/experience/control"
 	"github.com/ArisAachen/experience/crypt"
+	"github.com/ArisAachen/experience/define"
 	"github.com/ArisAachen/experience/queue"
 	"github.com/ArisAachen/experience/writer"
 	"pkg.deepin.io/lib/dbusutil"
+	"reflect"
 )
 
 /*
@@ -28,6 +30,9 @@ type Launch struct {
 	queue      abstract.BaseQueue
 	crypt      abstract.BaseCryptor
 	creator    abstract.BaseUrlCreator
+
+	// observer
+	observer *control.Observer
 
 	// system service
 	sysService *dbusutil.Service
@@ -49,6 +54,7 @@ func (lau *Launch) Init(sys *dbusutil.Service) {
 	lau.queue = queue.NewQueue()
 	lau.config = config.NewConfig()
 	lau.crypt = crypt.NewCryptor()
+	lau.observer = control.NewObserver()
 }
 
 // ModuleDisPatch dispatch module to diff manager
@@ -87,6 +93,29 @@ func (lau *Launch) ModuleDisPatch() {
 	// add module collector
 	colItems := []abstract.BaseCollectorItem{hardware, sys, dbus, app}
 	lau.AddCollector(colItems)
+
+	// start observer
+	typ := reflect.ValueOf(dbq)
+	method := typ.MethodByName("Collect")
+	// collect data from db
+	Args := reflect.ValueOf(lau.queue)
+	caller := define.Caller{
+		Method: method,
+		Args:   []reflect.Value{Args},
+	}
+	lau.observer.Register(define.ObServerDatabase, caller)
+
+	// create notify
+	notify := control.NewNotify()
+	_ = notify.Init()
+	err := notify.Monitor()
+	if err != nil {
+		logger.Warningf("create notify failed, err: %v", err)
+		return
+	}
+	notify.Handle(lau.observer)
+
+
 }
 
 // AddConfigFileLoader add file loader item to file

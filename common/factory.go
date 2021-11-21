@@ -24,6 +24,14 @@ func (com *parserFactory) createParser(module define.SysModule) baseParser {
 		parser = &boardParser{}
 	case define.MemoryModule:
 		parser = &memoryParser{}
+	case define.GpuModule:
+		parser = &gpuParser{}
+	case define.DiskModule:
+		parser = &blkParser{}
+	case define.NetModule:
+		parser = &networkParser{}
+	case define.EtherModule:
+		parser = &etherParser{}
 	default:
 	}
 	return parser

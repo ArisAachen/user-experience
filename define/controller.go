@@ -9,6 +9,10 @@ type Caller struct {
 
 type ObserveEvent string
 
+const (
+	ObServerDatabase ObserveEvent = "start push database"
+)
+
 // Rule use to controller writers behavior
 // in strict rule, no data will be written
 // in gentle rule, only special data would be sent

@@ -8,6 +8,13 @@ type Observer struct {
 	events map[define.ObserveEvent]define.Caller
 }
 
+func NewObserver() *Observer {
+	ob := &Observer{
+		events: make(map[define.ObserveEvent]define.Caller),
+	}
+	return ob
+}
+
 // Register register event handler
 func (ob *Observer) Register(event define.ObserveEvent, caller define.Caller) {
 	ob.events[event] = caller

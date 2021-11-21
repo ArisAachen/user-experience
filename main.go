@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/ArisAachen/experience/launch"
+	"pkg.deepin.io/lib/dbusutil"
 )
 
 /*
@@ -14,10 +15,17 @@ func main() {
 	// create launch
 	lch := launch.NewLaunch()
 
+	// create system service
+	sysService, err := dbusutil.NewSystemService()
+	if err != nil {
+		return
+	}
+
 	// init launch and add modules
-	lch.Init()
+	lch.Init(sysService)
 	lch.ModuleDisPatch()
 
 	// start service
 	lch.StartService()
+	sysService.Wait()
 }

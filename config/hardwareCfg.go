@@ -3,12 +3,12 @@ package config
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/ArisAachen/experience/common"
 	"io/ioutil"
 	"os"
 	"sync"
 
 	"github.com/ArisAachen/experience/abstract"
+	"github.com/ArisAachen/experience/common"
 	"github.com/ArisAachen/experience/crypt"
 	"github.com/ArisAachen/experience/define"
 	"github.com/ArisAachen/experience/queue"
@@ -163,6 +163,7 @@ func (hc *HardwareModule) updateHardware() bool {
 	// check if need update
 	if hc.GetCpu().GetModule() != info.Model || hc.GetCpu().GetId() != info.Id {
 		update = true
+		hc.Cpu = new(define.Obj)
 		hc.GetCpu().Id = info.Id
 		hc.GetCpu().Module = info.Model
 	}
@@ -175,6 +176,7 @@ func (hc *HardwareModule) updateHardware() bool {
 	// check if need update
 	if hc.GetBoard().GetModule() != info.Model || hc.GetBoard().GetId() != info.Id {
 		update = true
+		hc.Board = new(define.Obj)
 		hc.GetBoard().Id = info.Id
 		hc.GetBoard().Module = info.Model
 	}
@@ -187,6 +189,7 @@ func (hc *HardwareModule) updateHardware() bool {
 	// check if need update
 	if hc.GetGpu().GetModule() != info.Model || hc.GetGpu().GetId() != info.Id {
 		update = true
+		hc.Gpu = new(define.Obj)
 		hc.GetGpu().Id = info.Id
 		hc.GetGpu().Module = info.Model
 	}
@@ -199,6 +202,7 @@ func (hc *HardwareModule) updateHardware() bool {
 	// check if need update
 	if hc.GetMemory().GetModule() != info.Model {
 		update = true
+		hc.Memory = new(define.Obj)
 		hc.GetMemory().Module = info.Id
 	}
 
@@ -210,6 +214,7 @@ func (hc *HardwareModule) updateHardware() bool {
 	// check if need update
 	if hc.GetDisk().GetModule() != info.Model {
 		update = true
+		hc.Disk = new(define.Obj)
 		hc.GetDisk().Module = info.Id
 	}
 
@@ -218,17 +223,38 @@ func (hc *HardwareModule) updateHardware() bool {
 	if err != nil {
 		logger.Warningf("cant get network info, err: %v", err)
 	}
+	info, err = common.GetEtherInfo()
+	if err != nil {
+		logger.Warningf("cant get ethernet info, err: %v", err)
+	}
 	// check if need update
-	if hc.GetDisk().GetModule() != info.Model {
+	if hc.GetNetwork().GetModule() != info.Model {
 		update = true
+		hc.Network = new(define.Obj)
 		hc.GetNetwork().Module = info.Id
 	}
 
-	//// check machine id
-	//machine, err := common.GetMachineId()
-	//if err != nil {
-	//	logger.Warningf("cant get machine info, err: %v", err)
-	//}
+	// get machine id
+	machine, err := common.GetMachineId()
+	if err != nil {
+		logger.Warningf("read machine id failed, err: %v", err)
+	}
+	// get token
+	token, err := common.GetAptToken()
+	if err != nil {
+		logger.Warningf("read apt token failed, err: %v", err)
+	}
+
+	// get machine
+	if hc.GetOther().GetMachine() != machine || hc.GetOther().GetApt() != token {
+		hc.Other = new(define.HardwareOther)
+		hc.Other.Machine = machine
+		hc.Other.Apt = token
+	}
+
+	if update {
+		go hc.SaveToFile(hc.GetConfigPath())
+	}
 
 	return update
 }

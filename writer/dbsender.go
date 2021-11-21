@@ -10,7 +10,6 @@ import (
 	"github.com/ArisAachen/experience/abstract"
 	"github.com/ArisAachen/experience/common"
 	"github.com/ArisAachen/experience/define"
-	"github.com/ArisAachen/experience/queue"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -33,6 +32,10 @@ func NewDBWriter() *DBSender {
 	db := &DBSender{
 	}
 	return db
+}
+
+func (db *DBSender) Init() error {
+	return nil
 }
 
 // Connect connect to database
@@ -63,6 +66,10 @@ func (db *DBSender) Disconnect() error {
 		return err
 	}
 	return nil
+}
+
+func (db *DBSender) GetCollectName() string {
+	return ""
 }
 
 // Write write data to ref table
@@ -114,8 +121,8 @@ func (db *DBSender) Write(crypt abstract.BaseCryptor, table string, msg string) 
 	return result
 }
 
-// Push database push data into queue
-func (db *DBSender) Push(que queue.Queue) {
+// Collect database push data into queue
+func (db *DBSender) Collect(que abstract.BaseQueue) {
 	if db.client == nil {
 		logger.Warning("database is not opened yet")
 		return

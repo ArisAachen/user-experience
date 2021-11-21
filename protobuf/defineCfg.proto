@@ -12,7 +12,7 @@ message Obj {
   string id = 2;
 }
 
-message Hardware_Other {
+message HardwareOther {
   string machine = 1;
   string apt = 2;
   string active = 3;
@@ -31,7 +31,7 @@ message HardwareInfo {
   Obj memory = 11;
   Obj disk = 12;
   Obj network = 13;
-  Hardware_Other other = 14;
+  HardwareOther other = 14;
 }
 
 // save post abstract

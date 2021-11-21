@@ -16,6 +16,8 @@ const (
 	MachineFile = BaseEtcDir + "/" + "machine-id"
 	SysTypFile  = BaseEtcDir + "/" + "os-version"
 
+	AptTokenFile = BaseEtcDir + "/" + "apt/apt.conf.d/99lastore-token.conf"
+
 	PkgName = "deepin-user-experience-daemon"
 )
 

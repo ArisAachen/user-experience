@@ -68,14 +68,14 @@ const (
 	ProcessorId      SysInfoKey = "ID"
 
 	// BoardProductName  and BoardSerialNumber is read key of base board
-	BoardProductName  SysInfoKey = "ProductName"
-	BoardSerialNumber SysInfoKey = "SerialNumber"
+	BoardProductName  SysInfoKey = "Product Name"
+	BoardSerialNumber SysInfoKey = "Serial Number"
 
 	// MemoryMaximumCapacity is read key of memory
-	MemoryMaximumCapacity SysInfoKey = "MaximumCapacity"
+	MemoryMaximumCapacity SysInfoKey = "Maximum Capacity"
 
 	// VgaController is read key of VGA
-	VgaController SysInfoKey = "VGA compatible controllerl"
+	VgaController SysInfoKey = "VGA compatible controller"
 
 	// EthernetController is read key of Ethernet
 	EthernetController SysInfoKey = "Ethernet controller"
