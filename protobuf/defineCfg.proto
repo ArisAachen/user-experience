@@ -8,7 +8,7 @@ package define;
 
 // Basic object struct for mul message
 message Obj {
-    string module = 1;
+    string model = 1;
     string id = 2;
 }
 

@@ -165,11 +165,11 @@ func (hc *HardwareModule) updateHardware() bool {
 	}
 	// TODO these code can be optimize
 	// check if need update
-	if hc.GetCpu().GetModule() != info.Model || hc.GetCpu().GetId() != info.Id {
+	if hc.GetCpu().GetModel() != info.Model || hc.GetCpu().GetId() != info.Id {
 		update = true
 		hc.Cpu = new(define.Obj)
 		hc.GetCpu().Id = info.Id
-		hc.GetCpu().Module = info.Model
+		hc.GetCpu().Model = info.Model
 	}
 
 	// board module
@@ -178,11 +178,11 @@ func (hc *HardwareModule) updateHardware() bool {
 		logger.Warningf("cant get board info, err: %v", err)
 	}
 	// check if need update
-	if hc.GetBoard().GetModule() != info.Model || hc.GetBoard().GetId() != info.Id {
+	if hc.GetBoard().GetModel() != info.Model || hc.GetBoard().GetId() != info.Id {
 		update = true
 		hc.Board = new(define.Obj)
 		hc.GetBoard().Id = info.Id
-		hc.GetBoard().Module = info.Model
+		hc.GetBoard().Model = info.Model
 	}
 
 	// gpu module
@@ -191,11 +191,11 @@ func (hc *HardwareModule) updateHardware() bool {
 		logger.Warningf("cant get gpu info, err: %v", err)
 	}
 	// check if need update
-	if hc.GetGpu().GetModule() != info.Model || hc.GetGpu().GetId() != info.Id {
+	if hc.GetGpu().GetModel() != info.Model || hc.GetGpu().GetId() != info.Id {
 		update = true
 		hc.Gpu = new(define.Obj)
 		hc.GetGpu().Id = info.Id
-		hc.GetGpu().Module = info.Model
+		hc.GetGpu().Model = info.Model
 	}
 
 	// memory
@@ -204,10 +204,10 @@ func (hc *HardwareModule) updateHardware() bool {
 		logger.Warningf("cant get memory info, err: %v", err)
 	}
 	// check if need update
-	if hc.GetMemory().GetModule() != info.Model {
+	if hc.GetMemory().GetModel() != info.Model {
 		update = true
 		hc.Memory = new(define.Obj)
-		hc.GetMemory().Module = info.Id
+		hc.GetMemory().Model = info.Id
 	}
 
 	// disk
@@ -216,10 +216,10 @@ func (hc *HardwareModule) updateHardware() bool {
 		logger.Warningf("cant get disk info, err: %v", err)
 	}
 	// check if need update
-	if hc.GetDisk().GetModule() != info.Model {
+	if hc.GetDisk().GetModel() != info.Model {
 		update = true
 		hc.Disk = new(define.Obj)
-		hc.GetDisk().Module = info.Id
+		hc.GetDisk().Model = info.Id
 	}
 
 	// network
@@ -232,10 +232,10 @@ func (hc *HardwareModule) updateHardware() bool {
 		logger.Warningf("cant get ethernet info, err: %v", err)
 	}
 	// check if need update
-	if hc.GetNetwork().GetModule() != info.Model {
+	if hc.GetNetwork().GetModel() != info.Model {
 		update = true
 		hc.Network = new(define.Obj)
-		hc.GetNetwork().Module = info.Id
+		hc.GetNetwork().Model = info.Id
 	}
 
 	// get machine id
