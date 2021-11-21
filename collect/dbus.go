@@ -78,6 +78,10 @@ func (bus *DBusModule) Init() error {
 	return nil
 }
 
+func (bus *DBusModule) GetInterfaceName() string {
+	return define.ServiceName
+}
+
 func (bus *DBusModule) SetController(ctl abstract.BaseController) {
 	bus.controller = ctl
 }

@@ -1,6 +1,8 @@
 package main
 
-import "github.com/ArisAachen/experience/launch"
+import (
+	"github.com/ArisAachen/experience/launch"
+)
 
 /*
 	launch

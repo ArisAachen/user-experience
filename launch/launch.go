@@ -8,6 +8,7 @@ import (
 	"github.com/ArisAachen/experience/crypt"
 	"github.com/ArisAachen/experience/queue"
 	"github.com/ArisAachen/experience/writer"
+	"pkg.deepin.io/lib/dbusutil"
 )
 
 /*
@@ -27,6 +28,9 @@ type Launch struct {
 	queue      abstract.BaseQueue
 	crypt      abstract.BaseCryptor
 	creator    abstract.BaseUrlCreator
+
+	// system service
+	sysService *dbusutil.Service
 }
 
 func NewLaunch() *Launch {
@@ -36,7 +40,8 @@ func NewLaunch() *Launch {
 }
 
 // Init ref module
-func (lau *Launch) Init() {
+func (lau *Launch) Init(sys *dbusutil.Service) {
+	lau.sysService = sys
 	// TODO
 	lau.collector = collect.NewCollector()
 	lau.controller = control.NewController()
@@ -44,7 +49,6 @@ func (lau *Launch) Init() {
 	lau.queue = queue.NewQueue()
 	lau.config = config.NewConfig()
 	lau.crypt = crypt.NewCryptor()
-
 }
 
 // ModuleDisPatch dispatch module to diff manager

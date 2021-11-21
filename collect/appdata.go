@@ -56,6 +56,11 @@ func (app *appCollectorItem) Init() error {
 
 // Collect use to collect message
 func (app *appCollectorItem) Collect(que abstract.BaseQueue) {
+	// check if dock obj exist
+	if app.ddeDock == nil {
+		logger.Warning("dock init failed")
+		return
+	}
 	// use to monitor items added
 	// sometimes user send some quick-start app to dock
 	// will also monitor this message
