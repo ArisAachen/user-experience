@@ -103,7 +103,7 @@ func (app *appCollectorItem) GetCollectName() string {
 
 // Handler handle write to database result
 // at this time, just drop data if failed
-func (app *appCollectorItem) Handler(base abstract.BaseQueue, controller abstract.BaseController, result define.WriteResult) {
+func (app *appCollectorItem) Handler(base abstract.BaseQueue, crypt abstract.BaseCryptor, controller abstract.BaseController, result define.WriteResult) {
 	return
 }
 

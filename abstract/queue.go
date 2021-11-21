@@ -10,7 +10,7 @@ import (
 // queue handler could be config, collector and database(not sure now)
 type BaseQueueHandler interface {
 	// Handler handle result
-	Handler(base BaseQueue, controller BaseController, result define.WriteResult)
+	Handler(base BaseQueue, crypt BaseCryptor, controller BaseController, result define.WriteResult)
 }
 
 // BaseQueue use to push data to queue, pop queue to writer

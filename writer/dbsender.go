@@ -164,7 +164,7 @@ func (db *DBSender) GetInterface() string {
 }
 
 // Handler handle sent data result
-func (db *DBSender) Handler(base abstract.BaseQueue, controller abstract.BaseController, result define.WriteResult) {
+func (db *DBSender) Handler(base abstract.BaseQueue, crypt abstract.BaseCryptor, controller abstract.BaseController, result define.WriteResult) {
 	// check if database is opened
 	if db.client == nil {
 		logger.Warning("database is not opened yet")

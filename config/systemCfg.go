@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"github.com/ArisAachen/experience/abstract"
 	"github.com/ArisAachen/experience/common"
-	"github.com/ArisAachen/experience/crypt"
 	"github.com/ArisAachen/experience/define"
 	"github.com/golang/protobuf/proto"
 	"io/ioutil"
@@ -123,7 +122,7 @@ func (sys *SysModule) LoadFromFile(filename string) error {
 }
 
 // Handler handle web sender result
-func (sys *SysModule) Handler(base abstract.BaseQueue, controller abstract.BaseController, result define.WriteResult) {
+func (sys *SysModule) Handler(base abstract.BaseQueue, crypt abstract.BaseCryptor, controller abstract.BaseController, result define.WriteResult) {
 	defer controller.Release(define.LooseRule)
 	// decode msg to find tid
 	msg := result.Origin
@@ -145,8 +144,7 @@ func (sys *SysModule) Handler(base abstract.BaseQueue, controller abstract.BaseC
 		return
 	}
 	// decrypt data
-	decry := crypt.NewCryptor()
-	data, err := decry.Decode(cryptData)
+	data, err := crypt.Decode(cryptData)
 	if err != nil {
 		logger.Warningf("decode post interface message failed, err: %v", err)
 		return

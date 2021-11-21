@@ -120,6 +120,7 @@ type RcvInterface struct {
 
 // RcvUni receive uni id and
 type RcvUni struct {
+	Uni string `json:"uuid"`
 }
 
 // LogEvent login shutdown

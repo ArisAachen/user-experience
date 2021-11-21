@@ -53,7 +53,7 @@ func (wr *Writer) Write(name define.WriterItemModule, crypt abstract.BaseCryptor
 	// handler write result, now only write web server failed case should be
 	// TODO
 	if name == define.WebItemWriter {
-		go handler.Handler(nil, controller, result)
+		go handler.Handler(nil, crypt, controller, result)
 	}
 }
 

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/ArisAachen/experience/common"
-	"github.com/ArisAachen/experience/crypt"
 	"io/ioutil"
 	"os"
 	"sync"
@@ -77,7 +76,7 @@ func (st *PostModule) LoadFromFile(filename string) error {
 
 // Handler post interface is a tmp request,
 // so these request will not save to database even sent failed
-func (st *PostModule) Handler(base abstract.BaseQueue, controller abstract.BaseController, result define.WriteResult) {
+func (st *PostModule) Handler(base abstract.BaseQueue, crypt abstract.BaseCryptor, controller abstract.BaseController, result define.WriteResult) {
 	// update interface is strict rule
 	defer controller.Release(define.StrictRule)
 
@@ -96,8 +95,7 @@ func (st *PostModule) Handler(base abstract.BaseQueue, controller abstract.BaseC
 	}
 
 	// decrypt data
-	decry := crypt.NewCryptor()
-	data, err := decry.Decode(cryptData)
+	data, err := crypt.Decode(cryptData)
 	if err != nil {
 		logger.Warningf("decode post interface message failed, err: %v", err)
 		return

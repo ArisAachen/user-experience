@@ -3,16 +3,15 @@ package config
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/golang/protobuf/jsonpb"
 	"io/ioutil"
 	"os"
 	"sync"
 
 	"github.com/ArisAachen/experience/abstract"
 	"github.com/ArisAachen/experience/common"
-	"github.com/ArisAachen/experience/crypt"
 	"github.com/ArisAachen/experience/define"
 	"github.com/ArisAachen/experience/queue"
+	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
 )
 
@@ -78,7 +77,7 @@ func (hc *HardwareModule) LoadFromFile(filename string) error {
 }
 
 // Handler use to handle write result
-func (hc *HardwareModule) Handler(base abstract.BaseQueue, controller abstract.BaseController, result define.WriteResult) {
+func (hc *HardwareModule) Handler(base abstract.BaseQueue, crypt abstract.BaseCryptor, controller abstract.BaseController, result define.WriteResult) {
 	// hardware update uni id is strict rule
 	defer controller.Release(define.StrictRule)
 	// for hardware config, write data to web sender failed,
@@ -91,26 +90,30 @@ func (hc *HardwareModule) Handler(base abstract.BaseQueue, controller abstract.B
 		return
 	}
 	// decrypt data
-	decry := crypt.NewCryptor()
-	data, err := decry.Decode(cryptData)
+	data, err := crypt.Decode(cryptData)
 	if err != nil {
 		logger.Warningf("decode post interface message failed, err: %v", err)
 		return
 	}
+	// check length
+	if len(data) < 17 {
+		logger.Warning("receive uni length if invalid")
+	}
+	data = data[16:]
 	// get uni id from remote
-	var uni string
+	var uni define.RcvUni
 	err = json.Unmarshal([]byte(data), &uni)
 	if err != nil {
 		logger.Warningf("unmarshal receive uni id failed, err: %v", err)
 		return
 	}
 	// check if uni id is the same
-	if hc.GetUniId() == uni {
+	if hc.GetUniId() == uni.Uni {
 		logger.Debugf("uni id is the same, dont need to update: %v", err)
 		return
 	}
 	// save uni id
-	hc.UniId = uni
+	hc.UniId = uni.Uni
 	// save file to config file
 	err = hc.SaveToFile(hc.GetConfigPath())
 	if err != nil {

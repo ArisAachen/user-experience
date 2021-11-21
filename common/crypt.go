@@ -110,9 +110,9 @@ func AesDecode(msg define.CryptResult) (string, error) {
 	if len(msg.Data)%mode.BlockSize() != 0 {
 		return "", errors.New("aes decrypt not full block")
 	}
-	var result string
-	mode.CryptBlocks([]byte(result), []byte(msg.Data))
-	return result, nil
+	buf := make([]byte, len([]byte(msg.Data)))
+	mode.CryptBlocks(buf, []byte(msg.Data))
+	return string(buf), nil
 }
 
 // RSAEncode use rsa to encode data
